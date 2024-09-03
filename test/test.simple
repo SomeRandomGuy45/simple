@@ -1,0 +1,12 @@
+add main_lib
+local simple_text = "Hello world!"
+
+func Test(arg)
+        main_lib.print(simple_text)
+end
+
+func Entry(args ARG)
+        main_lib.print(simple_text)
+        Test(simple_text)
+        return SUCCESS_EXIT
+end
