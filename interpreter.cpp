@@ -3,16 +3,17 @@
 #include <sstream>
 #include <fstream>
 #include <regex>
-#include <dlfcn.h> // or <Windows.h> for Windows systems
 
 #ifdef _WIN32
 #include <Windows.h>
 #define LIB_EXT ".dll"
 #define LOAD_LIB(name) LoadLibraryA(name)
 #define UNLOAD_LIB(lib) FreeLibrary((HMODULE)lib)
-#define GET_FUNC(lib, func) (void(*)())GetProcAddress((HMODULE)lib, func)
+#define GET_FUNC(lib, func) reinterpret_cast<void*>(GetProcAddress((HMODULE)lib, func))
+#define LIBPATH "C:\\Program Files\\simple_libs\\lib"
 #else
 #include <dlfcn.h>
+#define LIBPATH "/usr/local/lib/simple_libs/lib"
 #ifdef __APPLE__
 #define LIB_EXT ".dylib"
 #else
@@ -39,6 +40,16 @@ std::string trim(const std::string& str) {
 }
 
 std::string extractLibName(const std::string& path) {
+#ifdef _WIN32
+    size_t lastSlashPos = path.find_last_of("\\/");
+    std::string fileName = path.substr(lastSlashPos + 1);
+    size_t dotPos = fileName.find_last_of('.');
+    std::string baseName = fileName.substr(0, dotPos);
+    if (baseName.compare(0, 3, "lib") == 0) {
+        baseName.erase(0, 3);
+    }
+    return baseName;
+#else
     size_t lastSlashPos = path.find_last_of('/');
     std::string fileName = path.substr(lastSlashPos + 1);
     size_t dotPos = fileName.find_last_of('.');
@@ -47,6 +58,7 @@ std::string extractLibName(const std::string& path) {
         baseName.erase(0, 3);
     }
     return baseName;
+#endif
 }
 
 Interpreter::Interpreter() {}
@@ -116,7 +128,7 @@ std::vector<std::string> Interpreter::parseArguments(const std::string& argsStr)
 
 void Interpreter::parseLine(const std::string& line) {
     if (line.find("add") != std::string::npos) {
-        std::string libName = "/usr/local/lib/simple_libs/lib" + line.substr(4) + LIB_EXT;
+        std::string libName = LIBPATH + line.substr(4) + LIB_EXT;
         loadLibrary(libName);
     } else if (line.find("local") != std::string::npos) {
         std::regex regex(R"(local\s+(\w+)\s*=\s*(.+))");
@@ -150,8 +162,12 @@ void Interpreter::parseLine(const std::string& line) {
             std::cerr << "Error: Failed to match function call in line: " << newline << "\n";
         }
     }
+    else if (line.find("//") != std::string::npos)
+    {
+        // Ignore comments
+        return;
+    }
 }
-
 
 void Interpreter::defineVariable(const std::string& name, const std::string& value) {
     variables[name] = value;
@@ -196,23 +212,21 @@ void Interpreter::loadLibrary(const std::string& libName) {
         return;
     }
 
-    //std::cout << "Loading library " << libName << std::endl;
     std::string call_lib_name = extractLibName(libName) + ".";
     loadedLibraries[libName] = libHandle;
 
     typedef FunctionPtr (*GetFunctionType)(const char*);
-    GetFunctionType getFunction = (GetFunctionType)getFunctionAddress(libHandle, "getFunction");
+    GetFunctionType getFunction = reinterpret_cast<GetFunctionType>(getFunctionAddress(libHandle, "getFunction"));
 
     if (getFunction) {
         typedef std::vector<std::string> (*ListFunctionsType)();
-        ListFunctionsType listFunctions = (ListFunctionsType)getFunctionAddress(libHandle, "listFunctions");
+        ListFunctionsType listFunctions = reinterpret_cast<ListFunctionsType>(getFunctionAddress(libHandle, "listFunctions"));
 
         if (listFunctions) {
             std::vector<std::string> functionNames = listFunctions();
             for (const auto& funcName : functionNames) {
-                FunctionPtr funcPtr = getFunction(funcName.c_str());
+                FunctionPtr funcPtr = reinterpret_cast<FunctionPtr>(getFunction(funcName.c_str()));
                 if (funcPtr) {
-                    //std::cout << "Added Function with name " << call_lib_name + funcName << "\n";
                     functions[call_lib_name + funcName] = funcPtr;
                 } else {
                     std::cerr << "Function not found in library: " << funcName << std::endl;
@@ -225,6 +239,7 @@ void Interpreter::loadLibrary(const std::string& libName) {
         std::cerr << "getFunction function not found in library: " << libName << std::endl;
     }
 }
+
 
 void Interpreter::unloadLibrary(const std::string& libName) {
     auto it = loadedLibraries.find(libName);
