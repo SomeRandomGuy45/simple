@@ -70,11 +70,11 @@ void Token::StartReadingFile()
 		{
 			continue;
 		}
-		if (line.find("/*") != std::string::npos)
+		if (line.substr(0, 2) == "/*")
 		{
 			trapInComment = true;
 		}
-		if (line.find("*/") != std::string::npos)
+		if (line.substr(0, 2) == "*/")
 		{
 			trapInComment = false;
 		}
@@ -114,7 +114,7 @@ void Token::StartReadingFile()
 
 			currentBytecodeFile << "IFOP," << op_1 << "," << op_2 << "," << op_3 << std::endl;
 		}
-		else if (line.find("local") != std::string::npos) {
+		else if (line.substr(0, 5) == "local") {
 			regex = R"(local\s+(\w+)\s*=\s*(.+))";
 			if (std::regex_match(line, match, regex)) {
 				std::string name = match[1];
@@ -122,7 +122,7 @@ void Token::StartReadingFile()
 				currentBytecodeFile << "DEFINEVAR," + name + "," + value << std::endl;
 			}
 		}
-		else if (line.find("add") != std::string::npos) {
+		else if (line.substr(0, 3) == "add") {
 			std::string libName = LIBPATH + line.substr(4) + LIB_EXT;
 			if (!std::filesystem::exists(libName))
 			{
@@ -131,10 +131,10 @@ void Token::StartReadingFile()
 			}
 			currentBytecodeFile << "LOADLIB," + libName << std::endl;
 		}
-		else if (line.find("end") != std::string::npos) {
+		else if (line.substr(0, 3) == "end") {
 			currentBytecodeFile << "END" << std::endl;
 		}
-		else if (line.find("//") != std::string::npos || line.find("*/") != std::string::npos)
+		else if (line.substr(0, 2) == "//" || line.substr(0, 2) == "*/")
 		{
 			continue;
 		}
@@ -147,11 +147,11 @@ void Token::StartReadingFile()
 				currentBytecodeFile << "DEFINEVAR," + name + "," + value << std::endl;
 				continue;
 			}
-			else if (line.find("*/") != std::string::npos)
+			else if (line.substr(0, 2) == "/*")
 			{
 				continue;
 			}
-			else if (line.find("/*") != std::string::npos)
+			else if (line.substr(0, 2) == "*/")
 			{
 				continue;
 			}

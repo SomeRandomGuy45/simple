@@ -1,11 +1,5 @@
 #include "vm.h"
 
-std::string removeQuotes(const std::string& str) {
-    std::string result = str;
-    result.erase(std::remove(result.begin(), result.end(), '\"'), result.end());
-    return result;
-}
-
 VM::VM(std::string src)
 {
 	filePath = src;
@@ -15,7 +9,7 @@ void VM::changeFilePath(std::string src)
 {
 	filePath = src;
 }
-
+//This is the implementation of how we can run the code from the bytecode!
 void VM::Compile()
 {
 	std::ifstream file(filePath);
@@ -58,8 +52,8 @@ void VM::Compile()
 			continue;
 		}
 		if (lineData[0] == "IFOP") {
-			std::string op1 = removeQuotes(lineData[1]);
-			std::string op2 = removeQuotes(lineData[3]);
+			std::string op1 = removeWhitespace(lineData[1], false);
+			std::string op2 = removeWhitespace(lineData[3], false);
 
 			// Replace with actual variable values if they exist
 			op1 = var_names.count(op1) ? var_names[op1] : op1;
@@ -158,4 +152,5 @@ void VM::Compile()
 			}
 		}
 	}
+	file.close(); 
 }
