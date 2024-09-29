@@ -119,7 +119,7 @@ int main(int argc, char** argv)
         {
             continue;
         }
-        if (newLine == "exit()")
+        if (newLine == "exit()" || newLine == "exit" || newLine == ":q" || newLine == "quit" || newLine == "quit()")
         {
             break;
         }
@@ -131,13 +131,9 @@ int main(int argc, char** argv)
         }
         catch (const std::exception& e) {
             std::cerr << e.what() << "\n";
-            delete token; // Clean up
-            return EXIT_FAILURE;
         }
         catch (...) {
             std::cerr << "Unknown error occurred.\n";
-            delete token; // Clean up
-            return EXIT_FAILURE;
         }
     }
     delete token; // Free allocated memory
