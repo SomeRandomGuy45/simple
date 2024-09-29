@@ -1,0 +1,5 @@
+/*
+* All this file does is prints Hello World!
+*/
+
+print("Hello world!")
