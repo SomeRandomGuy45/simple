@@ -1,0 +1,4 @@
+local testPrint="varName"
+print(testPrint)
+testPrint="hi"
+print(testPrint)

@@ -1,6 +1,5 @@
 #pragma once
-#include "helper.h"
-#include "bytecode.h"
+#include "vm.h"
 
 //The token class!
 //This holds all the data of some stuff about change it to bytecode
@@ -13,6 +12,8 @@ public:
 	void ReOpenFile(std::string fileToRun);
 	void StartReadingFile();
 private:
+	VM* vm = new VM();
+
 	std::string currentLine;
 	std::fstream currentFile;
 	std::fstream currentBytecodeFile;

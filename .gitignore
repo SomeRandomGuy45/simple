@@ -396,6 +396,15 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+settings.json
 /x64
 simple/x64/
+simple/build/
 /.vs
+*.dll
+*.dylib
+*.so
+*.exp
+*.lib
+*.o
+*.exe

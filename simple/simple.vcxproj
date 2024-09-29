@@ -104,7 +104,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,12 +135,15 @@
     <ClInclude Include="helper.h" />
     <ClInclude Include="simple.h" />
     <ClInclude Include="token.h" />
+    <ClInclude Include="vm.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="base_func.cpp" />
     <ClCompile Include="bytecode.cpp" />
     <ClCompile Include="helper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="token.cpp" />
+    <ClCompile Include="vm.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

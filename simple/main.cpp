@@ -8,6 +8,12 @@ static std::string getInput()
 	return input;
 }
 
+static void clearFile(const std::string& tempPath)
+{
+    std::ofstream file(tempPath, std::ios::trunc);
+    file.close();
+}
+
 int main(int argc, char** argv)
 {
     std::srand(static_cast<unsigned int>(std::time(0)));
@@ -15,9 +21,9 @@ int main(int argc, char** argv)
     // Create a temporary file path
     std::filesystem::path tempPath = std::filesystem::temp_directory_path() / ".simple";
     std::ofstream outputFile(tempPath, std::ios::in | std::ios::out | std::ios::trunc);
-    std::cout << "[MAIN] Created file with path " << tempPath << "\n";
 
     Token* token = new Token(tempPath.string());
+    
     if (argc >= 2) {
         try {
             // Reopen the file to the 2nd arg since we are going to compile it now
@@ -34,18 +40,27 @@ int main(int argc, char** argv)
             delete token; // Clean up
             return EXIT_FAILURE;
         }
+        delete token;
+        return EXIT_SUCCESS;
     }
     std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
     while (true)
     {
         outputFile.seekp(0);
         outputFile << "";
+        clearFile(tempPath.string());
         std::string newLine = getInput();
         if (newLine.empty())
         {
             continue;
         }
+        if (newLine == "exit()")
+        {
+            break;
+        }
         outputFile << newLine << std::endl;
+        delete token;
+        token = new Token(tempPath.string());
         try {
             token->StartReadingFile();
         }

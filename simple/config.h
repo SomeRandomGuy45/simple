@@ -1,4 +1,5 @@
 #pragma once
+#include "helper.h"
 // Config Inspiration from nlohmann json!
 // https://github.com/nlohmann/json/
 

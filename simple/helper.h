@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <stdexcept>
 #include <regex>
+#include <memory>
+#include "base_func.h"
 
 //some helper varibles
 #ifdef _WIN32
@@ -69,9 +71,6 @@ inline uint64_t getTotalRAM() {
 #else
 #error "Unsupported platform"
 #endif
-
-constexpr auto RAN_SUCCESS = 0;
-constexpr auto RAN_FAILED = -1;
 
 std::string removeWhitespace(std::string str, bool NO_SPACE);
 std::string getRandomFileName();
