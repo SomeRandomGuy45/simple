@@ -61,10 +61,15 @@ void Token::StartReadingFile()
 	{
 		scriptLines.push_back(currentLine);
 	}
-	int64_t currentLine = 1;
+	int64_t currentLine = 0;
 	bool trapInComment = false;
 	for (const std::string& line : scriptLines) {
+		currentLine += 1;
 		std::smatch match;
+		if (line.empty())
+		{
+			continue;
+		}
 		if (line.find("/*") != std::string::npos)
 		{
 			trapInComment = true;
@@ -78,24 +83,7 @@ void Token::StartReadingFile()
 			continue;
 		}
 		std::regex regex(R"(\s*(\w+(?:\.\w+)?)\s*\((.*?)\))");
-		if (line.find("local") != std::string::npos) {
-			regex = R"(local\s+(\w+)\s*=\s*(.+))";
-			if (std::regex_match(line, match, regex)) {
-				std::string name = match[1];
-				std::string value = match[2];
-				currentBytecodeFile << "DEFINEVAR," + name + "," + value << std::endl;
-			}
-		}
-		else if (line.find("add") != std::string::npos) {
-			std::string libName = LIBPATH + line.substr(4) + LIB_EXT;
-			if (!std::filesystem::exists(libName))
-			{
-				std::cerr << "[TOKEN-PARSER] Couldn't find library. Line: " + line + ". Line index is " + std::to_string(currentLine) << " . Trying access lib: " << libName << "\n";
-				throw std::runtime_error("Failed to run script!");
-			}
-			currentBytecodeFile << "LOADLIB," + libName << std::endl;
-		}
-		else if (std::regex_match(line, match, regex))
+		if (std::regex_match(line, match, regex))
 		{
 			std::string FuncCall = match[0];
 			std::string FuncName = match[1];
@@ -118,6 +106,34 @@ void Token::StartReadingFile()
 			line += "EOF";
 			currentBytecodeFile << line << std::endl;
 		}
+		else if (std::regex_match(line, match, std::regex(R"(if\s+([^ ]+)\s*(==|~=|>=|>|<=|<)\s*([^ ]+)\s*then)")))
+		{
+			std::string op_1 = match[1];
+			std::string op_2 = match[2];
+			std::string op_3 = match[3];
+
+			currentBytecodeFile << "IFOP," << op_1 << "," << op_2 << "," << op_3 << std::endl;
+		}
+		else if (line.find("local") != std::string::npos) {
+			regex = R"(local\s+(\w+)\s*=\s*(.+))";
+			if (std::regex_match(line, match, regex)) {
+				std::string name = match[1];
+				std::string value = match[2];
+				currentBytecodeFile << "DEFINEVAR," + name + "," + value << std::endl;
+			}
+		}
+		else if (line.find("add") != std::string::npos) {
+			std::string libName = LIBPATH + line.substr(4) + LIB_EXT;
+			if (!std::filesystem::exists(libName))
+			{
+				std::cerr << "[TOKEN-PARSER] Couldn't find library. Line: " + line + ". Line index is " + std::to_string(currentLine) << " . Trying access lib: " << libName << "\n";
+				throw std::runtime_error("Failed to run script!");
+			}
+			currentBytecodeFile << "LOADLIB," + libName << std::endl;
+		}
+		else if (line.find("end") != std::string::npos) {
+			currentBytecodeFile << "END" << std::endl;
+		}
 		else if (line.find("//") != std::string::npos || line.find("*/") != std::string::npos)
 		{
 			continue;
@@ -131,10 +147,17 @@ void Token::StartReadingFile()
 				currentBytecodeFile << "DEFINEVAR," + name + "," + value << std::endl;
 				continue;
 			}
+			else if (line.find("*/") != std::string::npos)
+			{
+				continue;
+			}
+			else if (line.find("/*") != std::string::npos)
+			{
+				continue;
+			}
 			std::cerr << "[TOKEN-PARSER] Couldn't find bytecode with this line: " + line + ". Line index is " + std::to_string(currentLine) << "\n";
 			throw std::runtime_error("Failed to run script!");
 		}
-		currentLine += 1;
 	}
 	vm->changeFilePath(FilePath);
 	vm->Compile();

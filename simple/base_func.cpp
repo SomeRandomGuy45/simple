@@ -1,5 +1,11 @@
 #include "base_func.h"
 
+/*
+* With functions you can return 2 types
+* 1. nullptr
+* 2. std::string
+*/
+
 std::unordered_map<std::string, FunctionPtr> outerFunctions{};
 std::unordered_map<std::string, void*> loadedLibraries{};
 
@@ -13,11 +19,24 @@ ReturnType print(std::vector<std::string> args)
     return nullptr;
 }
 
+ReturnType write(std::vector<std::string> args)
+{
+    if (args.size() != 2)
+    {
+        std::cout << "[WRITE] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    std::ofstream file(args[0]);
+    file << args[1] << std::endl;
+    return nullptr;
+}
+
 //The holder of all the functions
 //This looks trash and I really need to find a different way lol
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
 	return std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> {
 		{"print", [](std::vector<std::string> args) -> ReturnType { return print(args); }},
+        {"writeToFile", [](std::vector<std::string> args) -> ReturnType { return write(args); }},
 	};
 }
 

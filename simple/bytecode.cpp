@@ -22,4 +22,6 @@ std::vector<std::string> bytecodes = {
 	"MINRAM", //Min Ram
 	"RUNFUNC", //Run Function
 	"DEFINEVAR", //Defines a variable
+	"END", //End of a statement
+	"IFOP", //If statement
 };
