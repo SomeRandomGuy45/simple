@@ -9,11 +9,11 @@ CXXFLAGS = -Wall -std=c++17
 TARGET = build/simple
 
 # Source files and object files
-SRCS = base_func.cpp bytecode.cpp helper.cpp main.cpp token.cpp vm.cpp glad.c
+SRCS = base_func.cpp bytecode.cpp helper.cpp main.cpp token.cpp vm.cpp #glad.c
 OBJS = $(SRCS:.cpp=.o)
 
 # Header files
-HEADERS = base_func.h bytecode.h config.h helper.h token.h vm.h glad.h
+HEADERS = base_func.h bytecode.h config.h helper.h token.h vm.h #glad.h
 
 # Build the target
 $(TARGET): $(OBJS)
