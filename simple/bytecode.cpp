@@ -24,4 +24,5 @@ std::vector<std::string> bytecodes = {
 	"DEFINEVAR", //Defines a variable
 	"END", //End of a statement
 	"IFOP", //If statement
+	"RUNANDDEFVAR", //Does a function and define a variable
 };

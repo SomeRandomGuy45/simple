@@ -4,3 +4,5 @@ testPrint="hi"
 print(testPrint)
 local now_this_works = "local hi" 
 print(now_this_works)
+local func_test = print("hi")
+print(func_test)

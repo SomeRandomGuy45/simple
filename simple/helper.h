@@ -14,6 +14,13 @@
 #include <filesystem>
 #include <stdexcept>
 #include <regex>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <cglm/cglm.h>
+#include "include/glad/glad.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <thread>
 #include <memory>
 #include "base_func.h"
 

@@ -114,6 +114,13 @@ void Token::StartReadingFile()
 
 			currentBytecodeFile << "IFOP," << op_1 << "," << op_2 << "," << op_3 << std::endl;
 		}
+		else if (std::regex_match(line, match, std::regex(R"(local\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^()]*)\))")))
+		{
+			std::string name = match[1];
+			std::string funRun = match[2];
+			std::string argsStr = match[3];
+			currentBytecodeFile << "RUNANDDEFVAR," + name + "," + funRun + "," + argsStr << std::endl;
+		}
 		else if (line.substr(0, 5) == "local") {
 			regex = R"(local\s+(\w+)\s*=\s*(.+))";
 			if (std::regex_match(line, match, regex)) {

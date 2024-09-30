@@ -1,10 +1,12 @@
 #include "base_func.h"
+#include "tiny_obj_loader.h"
 
 /*
 * With functions you can return 2 types
 * 1. nullptr
 * 2. std::string
 */
+
 
 std::unordered_map<std::string, FunctionPtr> outerFunctions{};
 std::unordered_map<std::string, void*> loadedLibraries{};

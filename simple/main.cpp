@@ -1,4 +1,5 @@
 #include "simple.h"
+#include <stdlib.h> 
 
 #ifdef _WIN32
 #include <windows.h>
@@ -122,6 +123,10 @@ int main(int argc, char** argv)
         if (newLine == "exit()" || newLine == "exit" || newLine == ":q" || newLine == "quit" || newLine == "quit()")
         {
             break;
+        }
+        if (newLine == "clear()")
+        {
+            std::cout << "\033[2J\033[1;1H";
         }
         outputFile << newLine << std::endl;
         delete token;

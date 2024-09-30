@@ -84,6 +84,75 @@ void VM::Compile()
 			lineData[2].erase(std::remove(lineData[2].begin(), lineData[2].end(), '\"'), lineData[2].end());
 			var_names[lineData[1]] = lineData[2];
 		}
+		else if (lineData[0] == "RUNANDDEFVAR")
+		{
+			std::vector<std::string> args;
+			for (const auto& [func_Name, func] : funcNames)
+			{
+				if (func_Name == lineData[2])
+				{
+					if (lineData.size() > 2)
+					{
+						for (size_t i = 1; i < lineData.size(); i++)
+						{
+							if (lineData[i] == func_Name || lineData[i] == lineData[1])
+							{
+								continue;
+							}
+							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+							if (var_names.find(lineData[i]) != var_names.end())
+							{
+								args.push_back(var_names.find(lineData[i])->second);
+							}
+							else
+							{
+								args.push_back(lineData[i]);
+							}
+						}
+						ReturnType result = func(args);
+						std::string returnVal = "";
+						if (std::holds_alternative<std::string>(result)) {
+							returnVal = std::get<std::string>(result);
+						}
+						returnVal = removeWhitespace(returnVal, false);
+						var_names[lineData[1]] = returnVal;
+					}
+				}
+			}
+			for (const auto& [func_name, func] : outerFunctions)
+			{
+				if (func_name == lineData[2])
+				{
+					std::vector<std::string> args;
+					if (lineData.size() > 2)
+					{
+						for (size_t i = 1; i < lineData.size(); i++)
+						{
+							if (lineData[i] == func_name || lineData[i] == lineData[1])
+							{
+								continue;
+							}
+							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+							if (var_names.find(lineData[i]) != var_names.end())
+							{
+								args.push_back(var_names.find(lineData[i])->second);
+							}
+							else
+							{
+								args.push_back(lineData[i]);
+							}
+						}
+					}
+					ReturnType result = func(args);
+					std::string returnVal = "";
+					if (std::holds_alternative<std::string>(result)) {
+						returnVal = std::get<std::string>(result);
+					}
+					returnVal = removeWhitespace(returnVal, false);
+					var_names[lineData[1]] = returnVal;
+				}
+			}
+		}
 		else if (lineData[0] == "LOADLIB")
 		{
 			loadLibrary(lineData[1]);
@@ -115,7 +184,7 @@ void VM::Compile()
 						}
 						ReturnType result = func(args);
 						if (std::holds_alternative<std::string>(result)) {
-							//TODO something...
+							//TODO allow return vals
 						}
 					}
 				}
@@ -146,7 +215,7 @@ void VM::Compile()
 					}
 					ReturnType result = func(args);
 					if (std::holds_alternative<std::string>(result)) {
-						//TODO something...
+						//TODO allow return vals
 					}
 				}
 			}
