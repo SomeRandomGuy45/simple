@@ -413,3 +413,4 @@ simple/build/
 *.lib
 *.o
 *.exe
+obj_loader
