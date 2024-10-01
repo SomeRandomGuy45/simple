@@ -260,6 +260,13 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     lastY = ypos;
 }
 
+void RemoveModel(int index)
+{
+    auto model = models[index];
+    GLuint VAO = std::get<0>(model); // Extract the VAO from the model tuple
+    glDeleteVertexArrays(1, &VAO);
+    models.erase(std::remove(models.begin(), models.end(), model), models.end());
+}
 
 int main() {
     // Initialize GLFW
@@ -308,7 +315,8 @@ int main() {
     GLuint shaderProgram = compileShaders();
 
     // Load models into a vector
-    models.push_back(loadModel("test.obj", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f));
+    models.push_back(loadModel("test.obj", glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f));
+    models.push_back(loadModel("test.obj", glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f));
     //models.push_back(loadModel("test.obj", glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 5.0f, 5.0f), glm::vec3(2.0f)));
 
     // Set up projection matrix
