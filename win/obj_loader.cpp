@@ -14,7 +14,7 @@ GLFWwindow* window;
 
 bool locked = true;
 
-std::vector<std::tuple<GLuint, std::pair<unsigned int, glm::vec3>, std::tuple<glm::vec3, glm::vec3, glm::vec3, float>>> models; // Added rotation info
+std::vector<std::tuple<GLuint, std::pair<unsigned int, glm::vec3>, std::tuple<glm::vec3, glm::vec3, glm::vec3>>> models; // Removed rotationAngle
 
 // Camera class
 class Camera {
@@ -84,7 +84,7 @@ private:
 };
 
 // Function to load an OBJ file using Assimp
-std::tuple<GLuint, std::pair<unsigned int, glm::vec3>, std::tuple<glm::vec3, glm::vec3, glm::vec3, float>> loadModel(const std::string& path, glm::vec3 position, glm::vec3 color, glm::vec3 scale, glm::vec3 rotationAxis, float rotationAngle) {
+std::tuple<GLuint, std::pair<unsigned int, glm::vec3>, std::tuple<glm::vec3, glm::vec3, glm::vec3>> loadModel(const std::string& path, glm::vec3 position, glm::vec3 color, glm::vec3 scale, glm::vec3 rotationAxis) {
     std::vector<GLuint> indices;
     std::vector<glm::vec3> vertices;
 
@@ -97,7 +97,7 @@ std::tuple<GLuint, std::pair<unsigned int, glm::vec3>, std::tuple<glm::vec3, glm
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cerr << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
-        return { 0, { 0, glm::vec3(0.0f) }, { glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(0.0f), 0.0f } }; 
+        return { 0, { 0, glm::vec3(0.0f) }, { glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(0.0f) } }; 
     }
 
     for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
@@ -134,7 +134,7 @@ std::tuple<GLuint, std::pair<unsigned int, glm::vec3>, std::tuple<glm::vec3, glm
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    return { VAO, { static_cast<unsigned int>(indices.size()), position }, { color, scale, rotationAxis, rotationAngle } };
+    return { VAO, { static_cast<unsigned int>(indices.size()), position }, { color, scale, rotationAxis } };
 }
 
 // Function to render all loaded models
@@ -146,10 +146,15 @@ void renderModels(GLuint shaderProgram) {
         glm::vec3 color = std::get<0>(std::get<2>(model));
         glm::vec3 scale = std::get<1>(std::get<2>(model));
         glm::vec3 rotationAxis = std::get<2>(std::get<2>(model));
-        float rotationAngle = std::get<3>(std::get<2>(model));
+
+        // Normalize the axis and calculate the angle
+        float rotationAngle = glm::length(rotationAxis);
+        if (rotationAngle > 0.0f) {
+            rotationAxis = glm::normalize(rotationAxis);
+        }
 
         glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), position);
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationAngle), rotationAxis); // Rotation
+        modelMatrix = glm::rotate(modelMatrix, rotationAngle, rotationAxis); // Rotation
         modelMatrix = glm::scale(modelMatrix, scale); // Scaling
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
@@ -315,8 +320,7 @@ int main() {
     GLuint shaderProgram = compileShaders();
 
     // Load models into a vector
-    models.push_back(loadModel("test.obj", glm::vec3(0.0f, -10.0f, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f));
-    models.push_back(loadModel("test.obj", glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 45.0f));
+    models.push_back(loadModel("test.obj", glm::vec3(0.0f, 0, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(90.0f, 45.0f, 90.0f)));
     //models.push_back(loadModel("test.obj", glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 5.0f, 5.0f), glm::vec3(2.0f)));
 
     // Set up projection matrix
