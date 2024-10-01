@@ -276,7 +276,7 @@ void RemoveModel(int index)
 int main() {
     // Initialize GLFW
     if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
+        std::cerr << "ERROR::GLFW Failed to initialize GLFW" << std::endl;
         return -1;
     }
 
@@ -288,7 +288,7 @@ int main() {
     // Create a windowed mode window and its OpenGL context
     window = glfwCreateWindow(800, 600, "3D OBJ Loader", NULL, NULL);
     if (!window) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
+        std::cerr << "ERROR::GLFW Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
@@ -299,13 +299,13 @@ int main() {
     // Check OpenGL version
     const GLubyte* renderer = glGetString(GL_RENDERER);
     const GLubyte* version = glGetString(GL_VERSION);
-    std::cout << "Renderer: " << renderer << std::endl;
-    std::cout << "OpenGL version supported: " << version << std::endl;
+    std::cout << "INFO::GLFW Renderer: " << renderer << std::endl;
+    std::cout << "INFO::GLFW OpenGL version supported: " << version << std::endl;
 
     // Initialize GLEW
     glewExperimental = GL_TRUE; 
     if (glewInit() != GLEW_OK) {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
+        std::cerr << "ERROR::GLEW Failed to initialize GLEW" << std::endl;
         return -1;
     }
 
