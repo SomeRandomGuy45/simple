@@ -8,11 +8,11 @@ UNAME_S := $(shell uname -s)
 
 # Compiler settings
 CXX = g++
-CXXFLAGS = -shared -fPIC -Wall -Wextra -I.
+CXXFLAGS = -shared -fPIC -Wall -Wextra -I. --std=c++20
 
 # Platform-specific settings
 ifeq ($(UNAME_S), Darwin)  # macOS
-    TARGET_LIB = lib$(TARGET).dylib
+    TARGET_LIB = $(TARGET).dylib
     CXXFLAGS += -dynamiclib
     LDFLAGS = -install_name @rpath/$(TARGET_LIB)
 else ifeq ($(UNAME_S), Linux)  # Linux
