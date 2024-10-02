@@ -9,12 +9,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+#include <map>
+#include <cmath>
 
 GLFWwindow* window;
 
 bool locked = true;
 
-std::vector<std::tuple<GLuint, std::pair<unsigned int, glm::vec3>, std::tuple<glm::vec3, glm::vec3, glm::vec3>>> models; // Removed rotationAngle
+std::vector<std::tuple<GLuint, std::pair<unsigned int, glm::vec3>, std::tuple<glm::vec3, glm::vec3, glm::vec3>>> models;
 
 // Camera class
 class Camera {
@@ -30,6 +35,11 @@ public:
 
     void processKeyboard(float deltaTime) {
         const float cameraSpeed = 2.5f * deltaTime;
+        glm::vec3 resetC = Front;
+        glm::vec3 resetUP = Up;
+        Up.x = 0.0f;
+        Up.z = 0.0f;
+        Front.y = 0.0f;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             Position += Front * cameraSpeed;
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -38,15 +48,17 @@ public:
             Position -= Right * cameraSpeed;
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             Position += Right * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            Position += Up * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+            Position -= Up * cameraSpeed;
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            if (locked) {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                locked = false;
-            } else {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                locked = true;
-            }
+            auto CURSOR_TYPE = locked ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED;
+            glfwSetInputMode(window, GLFW_CURSOR, CURSOR_TYPE);
+            locked = locked ? false : true;
         }
+        Front = resetC;
+        Up = resetUP;
     }
 
     void processMouseMovement(float xoffset, float yoffset) {
@@ -167,6 +179,49 @@ void renderModels(GLuint shaderProgram) {
     }
 }
 
+//deltaTime
+float currentDeltaTime;
+
+// Tween parameters
+struct Tween {
+    glm::vec3 startRotation; // Starting rotation (in degrees)
+    glm::vec3 endRotation;   // Target rotation (in degrees)
+    float duration;          // Duration of the tween in seconds
+    float elapsedTime;       // Time elapsed since the tween started
+    float speed; // Speed of the tween
+};
+
+// Map to hold tween data for models
+std::map<int, Tween> needToTween;
+std::map<int, Tween> needToTween_POS;
+
+float LinearEase(float t) {
+    return t; // Linear interpolation
+}
+
+float EaseIn(float t) {
+    return t * t; // Accelerating from zero velocity
+}
+
+float EaseOut(float t) {
+    return t * (2 - t); // Decelerating to zero velocity
+}
+
+float EaseInOut(float t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; // Acceleration until halfway, then deceleration
+}
+
+glm::vec3 DoTweenFunc(const glm::vec3& start, const glm::vec3& end, float duration, float (*easeFunc)(float)) {
+    float t = currentDeltaTime / duration; // Calculate the progress
+    t = glm::clamp(t, 0.0f, 1.0f); // Clamp to [0, 1]
+    
+    // Apply the easing function
+    float easedT = easeFunc(t);
+    
+    // Interpolate
+    return start + (end - start) * easedT; 
+}
+
 // Vertex Shader
 const char* vertexShaderSource = R"(
 #version 330 core
@@ -273,6 +328,147 @@ void RemoveModel(int index)
     models.erase(std::remove(models.begin(), models.end(), model), models.end());
 }
 
+void MoveModel(int index, glm::vec3 newPosition, bool tween, float duration)
+{
+    if (index < 0 || index >= models.size())
+    {
+        std::cerr << "Invalid model index: " << index << std::endl;
+        return;
+    }
+
+    auto& model = models[index];
+    glm::vec3 currentPosition = std::get<1>(model).second;
+    glm::vec3 direction = newPosition - currentPosition;
+    float totalDistance = glm::length(direction);
+    if (tween)
+    {
+        needToTween_POS[index] = {currentPosition, newPosition, duration, 0.0f, totalDistance/duration};
+    }
+    else
+    {
+        std::get<1>(model).second = newPosition;
+    }
+}
+
+void MoveModel(int index, glm::vec3 newPosition) {MoveModel(index, newPosition, false, 0);};
+void MoveModel(int index, glm::vec3 newPosition, bool tween) {MoveModel(index, newPosition, tween, 0);};
+
+void RotateModel(int index, glm::vec3 newRotation, bool tween, float duration)
+{
+    if (index < 0 || index >= models.size()) {
+        std::cerr << "Invalid model index: " << index << std::endl;
+        return;
+    }
+
+    // Get the current model's rotation
+    auto& model = models[index];
+    glm::vec3 currentRotation = std::get<2>(std::get<2>(model)); // Assuming the rotation is stored here
+    glm::vec3 direction = newRotation - currentRotation;
+    float totalDistance = glm::length(direction);
+
+    if (tween) {
+        // Initialize tweening parameters
+        needToTween[index] = {currentRotation, newRotation, duration, 0.0f, totalDistance};
+    } else {
+        // Directly set the new rotation if not tweening
+        std::get<2>(std::get<2>(model)) = newRotation;
+    }
+}
+
+void RotateModel(int index, glm::vec3 newRotation) {RotateModel(index, newRotation, false, 0);};
+void RotateModel(int index, glm::vec3 newRotation, bool tween) {RotateModel(index, newRotation, tween, 0);};
+
+void DoAllTweenRotate()
+{
+    for (auto it = needToTween.begin(); it != needToTween.end(); ) {
+        auto& [index, tween] = *it;
+
+        // If this is the first update, calculate the angular speed
+        if (tween.elapsedTime == 0.0f) {
+            // Calculate the angular distance to rotate
+            glm::vec3 direction = tween.endRotation - tween.startRotation;
+            float totalAngle = glm::length(direction); // Total angular distance
+            tween.speed = totalAngle / tween.duration; // Compute angular speed
+        }
+
+        // Update elapsed time
+        tween.elapsedTime += currentDeltaTime;
+
+        // Calculate the angular distance to rotate this frame
+        float angleToRotate = tween.speed * currentDeltaTime;
+
+        // Calculate the current rotation
+        glm::vec3 currentRotation = std::get<2>(std::get<2>(models[index]));
+
+        // Determine if we can reach the target in this frame
+        if (glm::length(tween.endRotation - currentRotation) > angleToRotate) {
+            // Move towards the target by the calculated angle
+            glm::vec3 rotationStep = glm::normalize(tween.endRotation - currentRotation) * angleToRotate;
+            currentRotation += rotationStep; // Update current rotation
+        } else {
+            // Snap to the target rotation when within the distance threshold
+            currentRotation = tween.endRotation;
+            std::cout << "Tween complete for model " << index << std::endl;
+            it = needToTween.erase(it); // Remove the completed tween
+            continue; // Skip the increment as we've erased the element
+        }
+
+        // Update model rotation
+        auto& model = models[index];
+        std::get<2>(std::get<2>(model)) = currentRotation;
+
+        // Debug output
+        std::cout << "Current Rotation for model " << index << ": " << glm::to_string(currentRotation) << std::endl;
+
+        ++it; // Move to the next tween
+    }
+}
+
+void DoAllTweenMove()
+{
+    for (auto it = needToTween_POS.begin(); it != needToTween_POS.end(); ) {
+        auto& [index, tween] = *it;
+
+        // Get the current position
+        glm::vec3 currentPos = std::get<1>(models[index]).second;
+
+        // Calculate the total distance to the target position
+        glm::vec3 direction = tween.endRotation - tween.startRotation;
+        float totalDistance = glm::length(direction);
+
+        // If speed is not already set, calculate it based on duration
+        if (tween.elapsedTime == 0.0f) {
+            tween.speed = totalDistance / tween.duration; // Compute speed
+        }
+
+        // Normalize the direction
+        direction = glm::normalize(direction);
+
+        // Calculate the distance to move this frame
+        float distanceToMove = tween.speed * currentDeltaTime;
+
+        // Check if we can reach the target in this frame
+        if (glm::distance(currentPos, tween.endRotation) > distanceToMove) {
+            // Move the object a fixed distance in the direction of the target
+            currentPos += direction * distanceToMove;
+        } else {
+            // Snap to the target position when within the distance threshold
+            currentPos = tween.endRotation; 
+            std::cout << "Tween complete for model " << index << std::endl;
+            it = needToTween_POS.erase(it); // Remove the completed tween
+            continue; // Skip the increment, as we have erased the element
+        }
+
+        // Update model position
+        std::get<1>(models[index]).second = currentPos;
+
+        // Update elapsed time
+        tween.elapsedTime += currentDeltaTime;
+
+        ++it; // Move to the next tween
+    }
+}
+
 int main() {
     // Initialize GLFW
     if (!glfwInit()) {
@@ -320,7 +516,7 @@ int main() {
     GLuint shaderProgram = compileShaders();
 
     // Load models into a vector
-    models.push_back(loadModel("test.obj", glm::vec3(0.0f, 0, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(90.0f, 45.0f, 90.0f)));
+    models.push_back(loadModel("test.obj", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(90.0f, 45.0f, 90.0f)));
     //models.push_back(loadModel("test.obj", glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 5.0f, 5.0f), glm::vec3(2.0f)));
 
     // Set up projection matrix
@@ -329,6 +525,7 @@ int main() {
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         // Process input
+        currentDeltaTime = 0.016f;
         camera.processKeyboard(0.016f); // Adjust deltaTime as needed
 
         // Clear the buffers
@@ -345,6 +542,8 @@ int main() {
 
         // Render all loaded models
         renderModels(shaderProgram);
+        DoAllTweenRotate();
+        DoAllTweenMove();
 
         // Swap buffers
         glfwSwapBuffers(window);
