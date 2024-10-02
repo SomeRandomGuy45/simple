@@ -9,6 +9,11 @@ void VM::changeFilePath(std::string src)
 {
 	filePath = src;
 }
+
+void RunFuncWithArgs()
+{
+	//TODO
+}
 //This is the implementation of how we can run the code from the bytecode!
 void VM::Compile()
 {
@@ -58,6 +63,19 @@ void VM::Compile()
 			// Replace with actual variable values if they exist
 			op1 = var_names.count(op1) ? var_names[op1] : op1;
 			op2 = var_names.count(op2) ? var_names[op2] : op2;
+
+			std::string op3 = op1.substr(0,op1.find("("));
+			std::vector<std::string> args1; // Vector to store arguments
+			std::stringstream ss(op1.substr(op1.find("(") + 1, op1.find(")") - 2));
+			std::string arg;
+			while (std::getline(ss, arg, ',')) {
+				// Trim whitespace around the argument
+				arg.erase(0, arg.find_first_not_of(" \t\n"));
+				arg.erase(arg.find_last_not_of(" \t\n") + 1);
+				if (!arg.empty()) {
+					args1.push_back(arg); // Add non-empty argument to the vector
+				}
+			}
 
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {

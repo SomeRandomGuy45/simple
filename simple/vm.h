@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VM_
+#define VM_
 #include "config.h"
 #include "bytecode.h"
 
@@ -15,3 +16,4 @@ private:
 	std::string currentLine;
 	std::vector<std::string> scriptLines;
 };
+#endif //VM

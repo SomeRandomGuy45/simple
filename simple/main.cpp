@@ -41,13 +41,12 @@ static bool runArgs(const std::string& arg)
                         L"  -h, --help, -?     Display this help message\n" + 
                         L"  -v, --version      Display the version of Simple compiler\n";
         MessageBoxW(NULL, name.c_str(), L"Help", MB_OK | MB_ICONQUESTION);
-        #else
+        #endif
         std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << "\n";
         std::cout << "Usage: simple [options] [script.simple]\n";
         std::cout << "Options:\n";
         std::cout << "  -h, --help, -?     Display this help message\n";
         std::cout << "  -v, --version      Display the version of Simple compiler\n";
-        #endif
         return true;
     }
     else if (arg == "-v" || arg == "--version")
@@ -127,6 +126,7 @@ int main(int argc, char** argv)
         if (newLine == "clear()")
         {
             std::cout << "\033[2J\033[1;1H";
+            std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
         }
         outputFile << newLine << std::endl;
         delete token;

@@ -1,3 +1,5 @@
+#ifndef CONFIG
+#define CONFIG
 #pragma once
 #include "helper.h"
 // Config Inspiration from nlohmann json!
@@ -21,4 +23,5 @@
 #endif
 #ifndef EXIT_FAILURE
 #define EXIT_FAILURE 1
+#endif
 #endif

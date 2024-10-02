@@ -1,3 +1,5 @@
+#ifndef TOKEN
+#define TOKEN
 #pragma once
 #include "vm.h"
 
@@ -20,3 +22,4 @@ private:
 
 	std::vector<std::string> scriptLines;
 };
+#endif

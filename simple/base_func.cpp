@@ -1,5 +1,4 @@
 #include "base_func.h"
-#include "tiny_obj_loader.h"
 
 /*
 * With functions you can return 2 types

@@ -106,12 +106,12 @@ void Token::StartReadingFile()
 			line += "EOF";
 			currentBytecodeFile << line << std::endl;
 		}
-		else if (std::regex_match(line, match, std::regex(R"(if\s+([^ ]+)\s*(==|~=|>=|>|<=|<)\s*([^ ]+)\s*then)")))
+		else if (std::regex_match(line, match, std::regex(R"(if\s+(.+?)\s*(==|~=|>=|>|<=|<)\s*(.+?)\s*then)")))
 		{
 			std::string op_1 = match[1];
 			std::string op_2 = match[2];
 			std::string op_3 = match[3];
-
+			//std::cout << "IFOP," << op_1 << "," << op_2 << "," << op_3 << std::endl;
 			currentBytecodeFile << "IFOP," << op_1 << "," << op_2 << "," << op_3 << std::endl;
 		}
 		else if (std::regex_match(line, match, std::regex(R"(local\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^()]*)\))")))

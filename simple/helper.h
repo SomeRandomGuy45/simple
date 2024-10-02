@@ -1,3 +1,5 @@
+#ifndef HELPER
+#define HELPER
 #pragma once
 #include <iostream>
 #include <string>
@@ -46,6 +48,7 @@
 #define UNLOAD_LIB(lib) dlclose(lib)
 #define GET_FUNC(lib, func) dlsym(lib, func)
 #endif
+
 #ifdef _WIN32
 inline uint64_t getTotalRAM() {
     MEMORYSTATUSEX memInfo;
@@ -83,3 +86,4 @@ inline uint64_t getTotalRAM() {
 
 std::string removeWhitespace(std::string str, bool NO_SPACE);
 std::string getRandomFileName();
+#endif
