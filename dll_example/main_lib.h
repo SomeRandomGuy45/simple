@@ -5,14 +5,13 @@
 #include <vector>
 
 // Define DLLEXPORT for Windows, leave as empty for other OS's
+#define open extern "C"
 #ifdef _WIN32
     #define DLLEXPORT __declspec(dllexport)
     #define helper __stdcall
-    #define open extern "C"
 #else
-    #define DLLEXPORT
+    #define DLLEXPORT __attribute__((visibility("default")))
     #define helper
-    #define open
 #endif
 
 // Function pointer type for library functions

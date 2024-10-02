@@ -13,7 +13,7 @@ CXXFLAGS = -shared -fPIC -Wall -Wextra -I. --std=c++20
 # Platform-specific settings
 ifeq ($(UNAME_S), Darwin)  # macOS
     TARGET_LIB = $(TARGET).dylib
-    CXXFLAGS += -dynamiclib
+    CXXFLAGS += -fvisibility=default -dynamiclib
     LDFLAGS = -install_name @rpath/$(TARGET_LIB)
 else ifeq ($(UNAME_S), Linux)  # Linux
     TARGET_LIB = lib$(TARGET).so

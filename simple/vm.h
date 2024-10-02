@@ -10,8 +10,10 @@ public:
 	VM(std::string src);
 	void changeFilePath(std::string src);
 	void Compile();
+	std::string RunFuncWithArgs(std::vector<std::string> args, std::string lineData);
 private:
 	std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> funcNames = returnAllFuncName();
+	std::unordered_map<std::string, std::string> var_names;
 	std::string filePath;
 	std::string currentLine;
 	std::vector<std::string> scriptLines;

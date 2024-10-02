@@ -10,15 +10,60 @@ void VM::changeFilePath(std::string src)
 	filePath = src;
 }
 
-void RunFuncWithArgs()
+std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineData)
 {
-	//TODO
+	std::string returnVal;
+	for (std::string& arg : args)
+	{
+		arg = arg.substr(0, arg.size() - 1);
+		arg.erase(std::remove(arg.begin(), arg.end(), '\"'), arg.end());
+	}
+	for (const auto& [func_Name, func] : funcNames)
+	{
+		if (func_Name == lineData)
+		{
+			if (args.size() > 0)
+			{
+				for (size_t i = 1; i < args.size(); i++)
+				{
+					if (var_names.find(args[i]) != var_names.end())
+					{
+						args[i] = var_names[args[i]];
+					}
+				}
+			}
+			ReturnType result = func(args);
+			if (std::holds_alternative<std::string>(result)) {
+				returnVal = std::get<std::string>(result);
+			}
+		}
+	}
+	for (const auto& [func_name, func] : outerFunctions)
+	{
+		if (args.size() > 0)
+		{
+			for (size_t i = 1; i < args.size(); i++)
+			{
+				if (var_names.find(args[i]) != var_names.end())
+				{
+					args[i] = var_names[args[i]];
+				}
+			}
+		}
+		if (func_name == lineData)
+		{
+			ReturnType result = func(args);
+			if (std::holds_alternative<std::string>(result)) {
+				returnVal = std::get<std::string>(result);
+			}
+		}
+	}
+	return returnVal;
 }
 //This is the implementation of how we can run the code from the bytecode!
 void VM::Compile()
 {
 	std::ifstream file(filePath);
-	std::unordered_map<std::string, std::string> var_names;
 	bool stuckInComment = false;
 	bool skipStatment = false;
 	if (!file.is_open())
@@ -67,15 +112,29 @@ void VM::Compile()
 			std::string op3 = op1.substr(0,op1.find("("));
 			std::vector<std::string> args1; // Vector to store arguments
 			std::stringstream ss(op1.substr(op1.find("(") + 1, op1.find(")") - 2));
+			std::string arg_1;
+			while (std::getline(ss, arg_1, ',')) {
+				// Trim whitespace around the argument
+				arg_1.erase(0, arg_1.find_first_not_of(" \t\n"));
+				arg_1.erase(arg_1.find_last_not_of(" \t\n") + 1);
+				if (!arg.empty()) {
+					args1.push_back(arg_1); // Add non-empty argument to the vector
+				}
+			}
+			std::string op4 = op2.substr(0,op2.find("("));
+			std::vector<std::string> args2; // Vector to store arguments
+			std::stringstream ss_2(op1.substr(op2.find("(") + 1, op2.find(")") - 2));
 			std::string arg;
-			while (std::getline(ss, arg, ',')) {
+			while (std::getline(ss_2, arg, ',')) {
 				// Trim whitespace around the argument
 				arg.erase(0, arg.find_first_not_of(" \t\n"));
 				arg.erase(arg.find_last_not_of(" \t\n") + 1);
 				if (!arg.empty()) {
-					args1.push_back(arg); // Add non-empty argument to the vector
+					args2.push_back(arg); // Add non-empty argument to the vector
 				}
 			}
+			op1 = RunFuncWithArgs(args1, op3);
+			op2 = RunFuncWithArgs(args2, op4);
 
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
@@ -109,7 +168,7 @@ void VM::Compile()
 			{
 				if (func_Name == lineData[2])
 				{
-					if (lineData.size() > 2)
+					if (lineData.size() > 0)
 					{
 						for (size_t i = 1; i < lineData.size(); i++)
 						{
@@ -142,7 +201,7 @@ void VM::Compile()
 				if (func_name == lineData[2])
 				{
 					std::vector<std::string> args;
-					if (lineData.size() > 2)
+					if (lineData.size() > 0)
 					{
 						for (size_t i = 1; i < lineData.size(); i++)
 						{
@@ -182,7 +241,7 @@ void VM::Compile()
 			{
 				if (func_Name == lineData[1])
 				{
-					if (lineData.size() > 2)
+					if (lineData.size() > 0)
 					{
 						for (size_t i = 1; i < lineData.size(); i++)
 						{
@@ -212,7 +271,7 @@ void VM::Compile()
 				if (func_name == lineData[1])
 				{
 					std::vector<std::string> args;
-					if (lineData.size() > 2)
+					if (lineData.size() > 0)
 					{
 						for (size_t i = 1; i < lineData.size(); i++)
 						{

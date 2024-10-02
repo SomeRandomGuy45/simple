@@ -1,19 +1,10 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/quaternion.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
-#include <map>
-#include <cmath>
+#include "helper.h"
+#include <atomic>
+#include <mutex>
+
+std::atomic<bool> windowReady(false);
+std::condition_variable cv;
+std::mutex mtx;
 
 GLFWwindow* window;
 
@@ -469,8 +460,23 @@ void DoAllTweenMove()
     }
 }
 
-int main() {
+void CreateModel_Test()
+{
+    models.push_back(loadModel("test.obj", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(90.0f, 45.0f, 90.0f)));
+}
+
+void ClearColor()
+{
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+}
+
+int createNewWindow() {
+    std::cout << "Creating new window\n";
+
     // Initialize GLFW
+    glfwInitHint(GLFW_COCOA_MENUBAR, GLFW_FALSE);
+    glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
+
     if (!glfwInit()) {
         std::cerr << "ERROR::GLFW Failed to initialize GLFW" << std::endl;
         return -1;
@@ -490,14 +496,6 @@ int main() {
     }
     glfwMakeContextCurrent(window);
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    // Check OpenGL version
-    const GLubyte* renderer = glGetString(GL_RENDERER);
-    const GLubyte* version = glGetString(GL_VERSION);
-    std::cout << "INFO::GLFW Renderer: " << renderer << std::endl;
-    std::cout << "INFO::GLFW OpenGL version supported: " << version << std::endl;
-
     // Initialize GLEW
     glewExperimental = GL_TRUE; 
     if (glewInit() != GLEW_OK) {
@@ -505,19 +503,13 @@ int main() {
         return -1;
     }
 
-    glEnable(GL_DEPTH_TEST); // Enable depth testing
-
-    // Set up camera
+    // Set up camera and callbacks
     Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
     glfwSetWindowUserPointer(window, &camera);
     glfwSetCursorPosCallback(window, mouseCallback);
 
     // Compile shaders and create shader program
     GLuint shaderProgram = compileShaders();
-
-    // Load models into a vector
-    models.push_back(loadModel("test.obj", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(255.0f,0.0f,0.0f), glm::vec3(1.0f), glm::vec3(90.0f, 45.0f, 90.0f)));
-    //models.push_back(loadModel("test.obj", glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 5.0f, 5.0f), glm::vec3(2.0f)));
 
     // Set up projection matrix
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -529,7 +521,7 @@ int main() {
         camera.processKeyboard(0.016f); // Adjust deltaTime as needed
 
         // Clear the buffers
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        ClearColor();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Use the shader program
@@ -551,12 +543,25 @@ int main() {
     }
 
     // Cleanup
-    for (const auto& model : models) {
-        GLuint VAO = std::get<0>(model); // Extract the VAO from the model tuple
-        glDeleteVertexArrays(1, &VAO);
-    }
     glDeleteProgram(shaderProgram);
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
+}
+
+extern "C" DLLEXPORT std::string helper createWin(const std::vector<std::string>& args) {
+    createNewWindow();
+
+    return "Window created";
+}
+
+extern "C" open DLLEXPORT std::vector<std::string> helper listFunctions() {
+    return {std::string("createWin")};
+}
+
+extern "C" DLLEXPORT FunctionPtr helper getFunction(const char* name) {
+    if (std::string(name) == "createWin") {
+        return &createWin;
+    }
+    return nullptr;
 }
