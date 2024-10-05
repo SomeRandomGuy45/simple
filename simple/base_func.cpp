@@ -35,12 +35,27 @@ ReturnType write(std::vector<std::string> args)
     return nullptr;
 }
 
+ReturnType read(std::vector<std::string> args)
+{
+    if (args.size()!= 1)
+    {
+        std::cout << "[READ] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    std::ifstream file(args[0]);
+    std::ostringstream oss;
+    oss << file.rdbuf();
+    file.close();
+    return oss.str();
+}
+
 //The holder of all the functions
 //This looks trash and I really need to find a different way lol
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
 	return std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> {
 		{"print", [](std::vector<std::string> args) -> ReturnType { return print(args); }},
         {"writeToFile", [](std::vector<std::string> args) -> ReturnType { return write(args); }},
+        {"readFile", [](std::vector<std::string> args) -> ReturnType { return read(args); }}
 	};
 }
 
