@@ -2,6 +2,7 @@
 #define VM_
 #include "config.h"
 #include "bytecode.h"
+#include <algorithm>
 
 class VM {
 public:
@@ -17,5 +18,7 @@ private:
 	std::string filePath;
 	std::string currentLine;
 	std::vector<std::string> scriptLines;
+
+	uint64_t totalRAM = getTotalRAM();
 };
 #endif //VM

@@ -121,6 +121,15 @@ void Token::StartReadingFile()
 			std::string argsStr = match[3];
 			currentBytecodeFile << "RUNANDDEFVAR," + name + "," + funRun + "," + argsStr << std::endl;
 		}
+		else if (line.substr(0, 7) == "!define")
+		{
+			regex = R"(!define\s+(.*)\s+(.*))";
+			if (std::regex_match(line, match, regex)) {
+				std::string defineName = match[1];
+                std::string defineValue = match[2];
+                currentBytecodeFile << "DEFTOP," + defineName + "," + defineValue << std::endl;
+			}
+		}
 		else if (line.substr(0, 5) == "local") {
 			regex = R"(local\s+(\w+)\s*=\s*(.+))";
 			if (std::regex_match(line, match, regex)) {

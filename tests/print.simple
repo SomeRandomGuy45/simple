@@ -2,4 +2,7 @@
 * All this file does is prints Hello World!
 */
 
+!define MIN_RAM 125
+!define MIN_VERSION v1.0.0
+
 print("Hello world!")

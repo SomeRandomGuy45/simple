@@ -54,7 +54,7 @@ inline uint64_t getTotalRAM() {
     MEMORYSTATUSEX memInfo;
     memInfo.dwLength = sizeof(MEMORYSTATUSEX);
     GlobalMemoryStatusEx(&memInfo);
-    return memInfo.ullTotalPhys; // Return RAM in bytes
+    return memInfo.ullTotalPhys / 1024.0; // Return RAM in bytes
 }
 #elif defined(__linux__) // Linux
 inline uint64_t getTotalRAM() {
@@ -77,7 +77,7 @@ inline uint64_t getTotalRAM() {
     uint64_t totalRAM;
     size_t len = sizeof(totalRAM);
     sysctl(mib, 2, &totalRAM, &len, NULL, 0);
-    return totalRAM; // Return RAM in bytes
+    return totalRAM / 1024.0; // Return RAM in bytes
 }
 
 #else

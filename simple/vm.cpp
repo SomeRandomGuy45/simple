@@ -155,6 +155,42 @@ void VM::Compile()
 		if (skipStatment)
 		{
 			continue;
+		}
+		else if (lineData[0] == "DEFTOP")
+		{
+			lineData[1] = removeWhitespace(lineData[1], false);
+			if (defineFlags.count(lineData[1]) == 0)
+			{
+				continue;
+			}
+			if (defineFlags[lineData[1]].first == true)
+			{
+				continue;
+			}
+			defineFlags[lineData[1]].second = lineData[2];
+			if (lineData[1] == "MIN_RAM")
+			{
+				uint64_t minRam;
+				try {
+					minRam = std::stoull(lineData[2]);
+				} catch (...) {
+					minRam = 512;
+				}
+				if (minRam > totalRAM)
+				{
+					std::cerr << "Error: Requested minimum RAM (" << minRam << ") is greater than available RAM (" << totalRAM << ")." << std::endl;
+					return;
+				}
+			}
+			else if (lineData[1] == "MIN_VERSION")
+			{
+				if (SIMPLE_FULL_VERSION != lineData[2])
+				{
+					std::cerr << "Error: Requested minimum version (" << lineData[2] << ") is not equal to the current version (" << SIMPLE_FULL_VERSION << ")." << std::endl;
+                    return;
+				}
+			}
+			//add more later on
 		} 
 		else if (lineData[0] == "DEFINEVAR")
 		{

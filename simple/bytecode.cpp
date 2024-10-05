@@ -9,7 +9,7 @@
 
 std::unordered_map<std::string, std::pair<bool, std::string>> defineFlags = {
     {"MIN_VERSION", {false, "1.0.0"}},
-    {"MIN_RAM", {false, "512"}}
+    {"MIN_RAM", {false, "512"}},
 };
 
 /*
