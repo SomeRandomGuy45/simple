@@ -7,6 +7,10 @@
 #include <utility>
 #include <vector>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern std::unordered_map<std::string, std::pair<bool, std::string>> defineFlags;
 
 extern std::vector<std::string> bytecodes;
@@ -24,4 +28,9 @@ struct ByteCode {
 	std::string originalLine = "";
 	std::string value = "";
 };
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // DEFINE_FLAGS_H

@@ -1,5 +1,9 @@
 #include "bytecode.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 * Here is where you can set up a define flag
 * The format of these flags are like this
@@ -26,3 +30,7 @@ std::vector<std::string> bytecodes = {
 	"IFOP", //If statement
 	"RUNANDDEFVAR", //Does a function and define a variable
 };
+
+#ifdef __cplusplus
+}
+#endif

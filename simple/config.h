@@ -2,6 +2,9 @@
 #define CONFIG
 #pragma once
 #include "helper.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 // Config Inspiration from nlohmann json!
 // https://github.com/nlohmann/json/
 
@@ -25,5 +28,8 @@
 #endif
 #ifndef EXIT_FAILURE
 #define EXIT_FAILURE 1
+#endif
+#ifdef __cplusplus
+}
 #endif
 #endif

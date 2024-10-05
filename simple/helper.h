@@ -1,6 +1,7 @@
 #ifndef HELPER
 #define HELPER
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -84,6 +85,15 @@ inline uint64_t getTotalRAM() {
 #error "Unsupported platform"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 std::string removeWhitespace(std::string str, bool NO_SPACE);
 std::string getRandomFileName();
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

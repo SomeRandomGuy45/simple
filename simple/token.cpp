@@ -1,5 +1,9 @@
 #include "token.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //This gets called when we want to run from a file
 Token::Token(std::string fileToRun)
 {
@@ -178,3 +182,7 @@ void Token::StartReadingFile()
 	vm->changeFilePath(FilePath);
 	vm->Compile();
 }
+
+#ifdef __cplusplus
+}
+#endif

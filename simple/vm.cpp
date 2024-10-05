@@ -1,5 +1,9 @@
 #include "vm.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 VM::VM(std::string src)
 {
 	filePath = src;
@@ -336,3 +340,7 @@ void VM::Compile()
 	}
 	file.close(); 
 }
+
+#ifdef __cplusplus
+}
+#endif

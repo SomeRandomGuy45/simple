@@ -4,6 +4,10 @@
 #include "bytecode.h"
 #include <algorithm>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 class VM {
 public:
 	//Why try to create a VM without the path to the compiled file
@@ -21,4 +25,8 @@ private:
 
 	uint64_t totalRAM = getTotalRAM();
 };
+
+#ifdef __cplusplus
+}
+#endif
 #endif //VM

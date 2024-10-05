@@ -1,5 +1,9 @@
 #include "helper.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //These 2 functions helps out with removeWhitespace
 static std::string trimLeft(const std::string& str) {
 	size_t start = str.find_first_not_of(" \t\n\r\f\v");
@@ -57,3 +61,7 @@ std::string getRandomFileName() {
 
     return ss.str();
 }
+
+#ifdef __cplusplus
+}
+#endif

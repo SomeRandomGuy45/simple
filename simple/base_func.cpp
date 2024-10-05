@@ -6,6 +6,9 @@
 * 2. std::string
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 std::unordered_map<std::string, FunctionPtr> outerFunctions{};
 std::unordered_map<std::string, void*> loadedLibraries{};
@@ -122,3 +125,7 @@ void loadLibrary(const std::string& libName) {
         std::cerr << "[VM] Unknown exception while calling listFunctions." << std::endl;
     }
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -3,6 +3,10 @@
 #pragma once
 #include "vm.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //The token class!
 //This holds all the data of some stuff about change it to bytecode
 //Such as current file, current line, and etc...
@@ -22,4 +26,9 @@ private:
 
 	std::vector<std::string> scriptLines;
 };
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
