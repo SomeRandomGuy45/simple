@@ -142,7 +142,7 @@ void Token::StartReadingFile()
 			std::string libName = LIBPATH + line.substr(4) + LIB_EXT;
 			if (!std::filesystem::exists(libName))
 			{
-				std::cerr << "[TOKEN-PARSER] Couldn't find library. Line: " + line + ". Line index is " + std::to_string(currentLine) << " . Trying access lib: " << libName << "\n";
+				std::cerr << "[TOKEN-PARSER] Couldn't find library: " + line.substr(4) + ". Line: " + line + ". Line index is " + std::to_string(currentLine) << ". Trying access lib: " << libName << "\n";
 				throw std::runtime_error("Failed to run script!");
 			}
 			currentBytecodeFile << "LOADLIB," + libName << std::endl;
