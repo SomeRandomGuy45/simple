@@ -37,7 +37,7 @@ ReturnType write(std::vector<std::string> args)
 
 ReturnType read(std::vector<std::string> args)
 {
-    if (args.size()!= 1)
+    if (args.size() != 1)
     {
         std::cout << "[READ] Error: Invalid number of arguments\n";
         return nullptr;

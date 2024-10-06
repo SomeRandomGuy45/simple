@@ -7,13 +7,14 @@ extern "C" {
 /*
 * Here is where you can set up a define flag
 * The format of these flags are like this
-* {"name_of_flag", read_only, "default value"}
+* {"name_of_flag", {read_only, "default value"}}
 * If a define flag is read only then trying the enable it will not work
 */
 
 std::unordered_map<std::string, std::pair<bool, std::string>> defineFlags = {
     {"MIN_VERSION", {false, "1.0.0"}},
     {"MIN_RAM", {false, "512"}},
+	{"OS", {false, "ANY"}},
 };
 
 /*

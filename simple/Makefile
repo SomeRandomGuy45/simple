@@ -7,7 +7,7 @@ LIB_TARGET_BASE = build/libsimple
 MAIN_TARGET = build/simple
 
 # Source files and object files
-SRCS = base_func.cpp bytecode.cpp helper.cpp token.cpp vm.cpp
+SRCS = base_func.cpp bytecode.cpp helper.cpp token.cpp vm.cpp Node.cpp
 OBJS = $(SRCS:.cpp=.o)
 MAIN_SRC = main.cpp
 MAIN_OBJ = $(MAIN_SRC:.cpp=.o)

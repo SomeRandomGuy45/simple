@@ -2,6 +2,8 @@
 #define VM_
 #include "config.h"
 #include "bytecode.h"
+#include "table/Node.h"
+
 #include <algorithm>
 
 #ifdef __cplusplus
@@ -18,7 +20,6 @@ public:
 	std::string RunFuncWithArgs(std::vector<std::string> args, std::string lineData);
 private:
 	std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> funcNames = returnAllFuncName();
-	std::unordered_map<std::string, std::string> var_names;
 	std::string filePath;
 	std::string currentLine;
 	std::vector<std::string> scriptLines;
