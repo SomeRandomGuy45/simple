@@ -10,6 +10,7 @@ extern "C" {
 //The token class!
 //This holds all the data of some stuff about change it to bytecode
 //Such as current file, current line, and etc...
+
 class Token {
 public:
 	Token() = default;

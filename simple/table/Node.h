@@ -1,9 +1,9 @@
+#ifndef NODE_M
+#define NODE_M
 #include "NodeItem.h"
 #include <stdexcept>
 #include <vector>
 #include <unordered_map>
-
-std::unordered_map<std::string, std::string> var_names;
 
 class Node {
 public:
@@ -29,3 +29,7 @@ private:
 };
 
 Node parse(std::string data);
+
+std::string removeComments(const std::string& input);
+
+#endif

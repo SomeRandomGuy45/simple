@@ -67,6 +67,7 @@ void Token::StartReadingFile()
 	}
 	int64_t currentLine = 0;
 	bool trapInComment = false;
+	bool trapInFunction = false;
 	for (const std::string& line : scriptLines) {
 		currentLine += 1;
 		std::smatch match;
@@ -85,6 +86,10 @@ void Token::StartReadingFile()
 		if (trapInComment)
 		{
 			continue;
+		}
+		if (trapInFunction)
+		{
+			currentBytecodeFile << "DOFUNCCALL,";
 		}
 		std::regex regex(R"(\s*(\w+(?:\.\w+)?)\s*\((.*?)\))");
 		if (std::regex_match(line, match, regex))
@@ -142,6 +147,34 @@ void Token::StartReadingFile()
 				currentBytecodeFile << "DEFINEVAR," + name + "," + value << std::endl;
 			}
 		}
+		else if (line.substr(0, 5) == "func!")
+		{
+			regex = R"(func!\s+([a-zA-Z_]\w*)\s*\(([^)]*)\))";
+			if (std::regex_match(line, match, regex)) {
+				std::string funcName = match[1];
+				std::string argsStr = match[2]; // Capture the arguments string
+				std::vector<std::string> args; // Vector to store arguments
+				std::stringstream ss(argsStr);
+				std::string arg;
+				std::string add;
+				while (std::getline(ss, arg, ',')) {
+					// Trim whitespace around the argument
+					arg.erase(0, arg.find_first_not_of(" \t\n"));
+					arg.erase(arg.find_last_not_of(" \t\n") + 1);
+					if (!arg.empty()) {
+						args.push_back(arg); // Add non-empty argument to the vector
+					}
+				}
+				add = "BEGINFUN," + funcName + ",";
+				for (const std::string& a : args)
+				{
+					add += a + ",";
+				}
+				add += "EOF";
+				currentBytecodeFile << add << std::endl;
+				trapInFunction = true;
+			}
+		}
 		else if (line.substr(0, 3) == "add") {
 			std::string libName = LIBPATH + line.substr(4) + LIB_EXT;
 			if (!std::filesystem::exists(libName))
@@ -152,6 +185,10 @@ void Token::StartReadingFile()
 			currentBytecodeFile << "LOADLIB," + libName << std::endl;
 		}
 		else if (line.substr(0, 3) == "end") {
+			if (line.substr(0, 4) == "end!")
+			{
+				trapInFunction = false;
+			}
 			currentBytecodeFile << "END" << std::endl;
 		}
 		else if (line.substr(0, 2) == "//" || line.substr(0, 2) == "*/")

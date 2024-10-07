@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+std::unordered_map<std::string, std::string> var_names;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
