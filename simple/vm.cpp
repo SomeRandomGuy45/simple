@@ -3,7 +3,7 @@
 Node parse(std::string input)
 {
     Node root;
-    std::regex entryPattern(R"(\s*\"([^\"]+)\"\s*=\s*(\"([^\"]+)\"|([a-zA-Z_][a-zA-Z0-9_]*))\s*)");
+    std::regex entryPattern(R"(\s*\"([^\"]+)\"\s*=\s*(\"([^\"]+)\"|([a-zA-Z_][a-zA-Z0-9_]*|{[^}]*}))\s*)");
     std::smatch matches;
 
     std::string sanitizedInput = removeComments(input);  // Remove comments first
