@@ -82,13 +82,6 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
     std::srand(static_cast<unsigned int>(std::time(0)));
-
-    Node newNode;
-
-    newNode["me"] = "value";
-
-    std::cout << newNode["me"] << std::endl;
-
     // Create a temporary file path
     std::filesystem::path tempPath = std::filesystem::temp_directory_path() / ".simple";
     std::ofstream outputFile(tempPath, std::ios::in | std::ios::out | std::ios::trunc);
