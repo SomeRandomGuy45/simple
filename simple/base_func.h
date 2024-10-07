@@ -3,7 +3,6 @@
 #define BASE_FUNC
 
 #include "helper.h"
-#include "bytecode.h"
 #include <functional>
 #include <variant>
 #include <unordered_map>

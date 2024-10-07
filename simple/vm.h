@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-std::unordered_map<std::string, std::string> var_names;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,6 +15,7 @@ public:
 	//Why try to create a VM without the path to the compiled file
 	VM() = default;
 	VM(std::string src);
+	Node parse(std::string input);
 	void changeFilePath(std::string src);
 	void Compile();
 	std::string RunFuncWithArgs(std::vector<std::string> args, std::string lineData);
@@ -25,6 +24,8 @@ private:
 	std::string filePath;
 	std::string currentLine;
 	std::vector<std::string> scriptLines;
+
+	std::unordered_map<std::string, std::string> var_names;
 
 	uint64_t totalRAM = getTotalRAM();
 };

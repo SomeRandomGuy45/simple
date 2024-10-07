@@ -28,8 +28,6 @@ private:
     std::vector<NodeItem> children;
 };
 
-Node parse(std::string data);
-
 std::string removeComments(const std::string& input);
 
 #endif

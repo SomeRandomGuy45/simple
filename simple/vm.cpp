@@ -1,6 +1,6 @@
 #include "vm.h"
 
-Node parse(std::string input)
+Node VM::parse(std::string input)
 {
     Node root;
     std::regex entryPattern(R"(\s*\"([^\"]+)\"\s*=\s*(\"([^\"]+)\"|([a-zA-Z_][a-zA-Z0-9_]*|{[^}]*}))\s*)");
