@@ -60,6 +60,18 @@ ReturnType runSysCmd(std::vector<std::string> args)
     return std::to_string(returnCode);
 }
 
+ReturnType sinFunc(std::vector<std::string> args)
+{
+    if (args.size()!= 1)
+    {
+        std::cout << "[SIN] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    double angle = std::stod(args[0]);
+    double result = sin(angle);
+    return std::to_string(result);
+}
+
 //The holder of all the functions
 //This looks trash and I really need to find a different way lol
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
@@ -67,7 +79,8 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
 		{"print", [](std::vector<std::string> args) -> ReturnType { return print(args); }},
         {"writeToFile", [](std::vector<std::string> args) -> ReturnType { return write(args); }},
         {"readFile", [](std::vector<std::string> args) -> ReturnType { return read(args); }},
-        {"system", [](std::vector<std::string> args) -> ReturnType { return runSysCmd(args); }}
+        {"system", [](std::vector<std::string> args) -> ReturnType { return runSysCmd(args); }},
+        {"sin", [](std::vector<std::string> args) -> ReturnType { return sinFunc(args); }}
 	};
 }
 
