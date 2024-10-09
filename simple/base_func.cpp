@@ -1,4 +1,5 @@
 #include "base_func.h"
+#include <cmath>
 
 /*
 * With functions you can return 2 types

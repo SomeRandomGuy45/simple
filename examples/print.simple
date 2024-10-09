@@ -5,4 +5,4 @@
 !define MIN_RAM 256
 !define MIN_VERSION v1.0.0
 
-print("Hello world!")
+print("Hello world!") //prints Hello World

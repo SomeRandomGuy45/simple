@@ -68,7 +68,7 @@ void Token::StartReadingFile()
 	int64_t currentLine = 0;
 	bool trapInComment = false;
 	bool trapInFunction = false;
-	for (const std::string& line : scriptLines) {
+	for (std::string& line : scriptLines) {
 		currentLine += 1;
 		std::smatch match;
 		if (line.empty())
@@ -91,6 +91,7 @@ void Token::StartReadingFile()
 		{
 			currentBytecodeFile << "DOFUNCCALL,";
 		}
+		line = removeWhitespace(removeComments(line), false);
 		std::regex regex(R"(\s*(\w+(?:\.\w+)?)\s*\((.*?)\))");
 		if (std::regex_match(line, match, regex))
 		{
