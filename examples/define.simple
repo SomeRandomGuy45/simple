@@ -3,7 +3,7 @@
 * for MIN_VERSION the format MUST be vX.X.X
 * for MIN_RAM the format is in KB so if we did 1GB it would be 1048576
 * GB support will be coming soon
-/
+*/
 
 !define MIN_RAM 256
 !define MIN_VERSION v1.0.0
