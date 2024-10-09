@@ -27,6 +27,8 @@ ReturnType write(std::vector<std::string> args);
 
 ReturnType read(std::vector<std::string> args);
 
+ReturnType runSysCmd(std::vector<std::string> args);
+
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName();
 
 void loadLibrary(const std::string& libName);

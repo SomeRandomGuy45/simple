@@ -49,13 +49,25 @@ ReturnType read(std::vector<std::string> args)
     return oss.str();
 }
 
+ReturnType runSysCmd(std::vector<std::string> args)
+{
+    if (args.size() != 1)
+    {
+        std::cout << "[RUNSYS] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    int returnCode = system(args[0].c_str());
+    return std::to_string(returnCode);
+}
+
 //The holder of all the functions
 //This looks trash and I really need to find a different way lol
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
 	return std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> {
 		{"print", [](std::vector<std::string> args) -> ReturnType { return print(args); }},
         {"writeToFile", [](std::vector<std::string> args) -> ReturnType { return write(args); }},
-        {"readFile", [](std::vector<std::string> args) -> ReturnType { return read(args); }}
+        {"readFile", [](std::vector<std::string> args) -> ReturnType { return read(args); }},
+        {"system", [](std::vector<std::string> args) -> ReturnType { return runSysCmd(args); }}
 	};
 }
 
