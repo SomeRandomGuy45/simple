@@ -7,22 +7,18 @@
 
 class Node {
 public:
+    // Constructors
+    Node() = default;
+    Node(Node&&) = default;
+    Node(const Node&) = default;
+    
+    //Destructor
+    ~Node() = default;
 
-    void operator=(Node& other)
-    {
-        children = other.children;
-    }
-
-    std::string& operator[] (const std::string& name) {
-        for (auto& child : children) {
-            if (child.getName() == name) {
-                return child.getValue(); // Return reference to the value
-            }
-        }
-        // If the child doesn't exist, create it with an empty value
-        children.emplace_back(name, "");
-        return children.back().getValue();
-    }
+    // Operators
+    void operator=(Node& other);
+    bool operator==(Node& other);
+    std::string& operator[] (const std::string& name);
 
 private:
     std::vector<NodeItem> children;

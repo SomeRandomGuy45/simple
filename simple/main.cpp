@@ -22,11 +22,24 @@ static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType) {
 
 #else
 #include <unistd.h>
+#include <termios.h>
+
+#define HAS_GET_KEY true
+
+char getKey() {
+    struct termios oldt, newt;
+    char ch;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO); // Disable canonical mode and echo
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    ch = getchar();
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    return ch;
+}
 
 void catchSignal(int sigNumber) {
-    if (sigNumber == SIGINT) {
-        std::cout << "Ctrl+C pressed, but ignored!" << std::endl;
-    }
+    return;
 }
 #endif
 
@@ -112,7 +125,7 @@ int main(int argc, char** argv) {
             delete token;
             return EXIT_FAILURE;
         } catch (...) {
-            std::cerr << "Unknown error occurred.\n";
+            std::cerr << "Unknown error occurred!\n";
             delete token;
             return EXIT_FAILURE;
         }
@@ -122,7 +135,7 @@ int main(int argc, char** argv) {
 
     std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
 
-    while (true) {
+    while (!shouldKill) {
         outputFile.seekp(0);
         outputFile << "";
         clearFile(tempPath.string());
@@ -147,7 +160,7 @@ int main(int argc, char** argv) {
         } catch (const std::exception& e) {
             std::cerr << e.what() << "\n";
         } catch (...) {
-            std::cerr << "Unknown error occurred.\n";
+            std::cerr << "Unknown error occurred!\n";
         }
     }
 

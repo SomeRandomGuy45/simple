@@ -24,7 +24,7 @@ ReturnType print(std::vector<std::string> args)
     return nullptr;
 }
 
-ReturnType write(std::vector<std::string> args)
+ReturnType writeData(std::vector<std::string> args)
 {
     if (args.size() != 2)
     {
@@ -36,7 +36,7 @@ ReturnType write(std::vector<std::string> args)
     return nullptr;
 }
 
-ReturnType read(std::vector<std::string> args)
+ReturnType readData(std::vector<std::string> args)
 {
     if (args.size() != 1)
     {
@@ -78,8 +78,8 @@ ReturnType sinFunc(std::vector<std::string> args)
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
 	return std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> {
 		{"print", [](std::vector<std::string> args) -> ReturnType { return print(args); }},
-        {"writeToFile", [](std::vector<std::string> args) -> ReturnType { return write(args); }},
-        {"readFile", [](std::vector<std::string> args) -> ReturnType { return read(args); }},
+        {"writeToFile", [](std::vector<std::string> args) -> ReturnType { return writeData(args); }},
+        {"readFile", [](std::vector<std::string> args) -> ReturnType { return readData(args); }},
         {"system", [](std::vector<std::string> args) -> ReturnType { return runSysCmd(args); }},
         {"sin", [](std::vector<std::string> args) -> ReturnType { return sinFunc(args); }}
 	};

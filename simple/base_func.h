@@ -23,9 +23,9 @@ extern std::unordered_map<std::string, void*> loadedLibraries;
 
 ReturnType print(std::vector<std::string> args);
 
-ReturnType write(std::vector<std::string> args);
+ReturnType writeData(std::vector<std::string> args);
 
-ReturnType read(std::vector<std::string> args);
+ReturnType readData(std::vector<std::string> args);
 
 ReturnType runSysCmd(std::vector<std::string> args);
 

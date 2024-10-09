@@ -3,10 +3,12 @@
 
 class NodeItem {
 public:
+    // Constructors
     NodeItem() = default;
-
-    // Constructor with name and value
     NodeItem(std::string n, std::string v) : name(std::move(n)), value(std::move(v)) {}
+
+    // Destructor
+    ~NodeItem() = default;
 
     // Getter for the name
     std::string getName() const { return name; }
@@ -23,6 +25,11 @@ public:
     // Conversion operator to get the value as a string
     operator std::string() const {
         return value;
+    }
+
+    // Equality operator
+    bool operator==(const NodeItem& other) const {
+        return name == other.name && value == other.value;
     }
 
 private:
