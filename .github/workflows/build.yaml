@@ -72,6 +72,24 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
+    - name: Check and Move libsimple_main.dll (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        if (Test-Path "${{ steps.strings.outputs.build-output-dir }}\dist\libsimple_main.dll") {
+            Move-Item -Path "${{ steps.strings.outputs.build-output-dir }}\libsimple_main.dll" -Destination "${{ steps.strings.outputs.build-output-dir }}\dist\"
+        } else {
+            Write-Host "libsimple_main.dll does not exist."
+        }
+
+    - name: Check and Move libsimple_main.dll (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        if [ -f "${{ steps.strings.outputs.build-output-dir }}/libsimple_main.dll" ]; then
+            mv "${{ steps.strings.outputs.build-output-dir }}/libsimple_main.dll" "${{ steps.strings.outputs.build-output-dir }}/dist/"
+        else
+            echo "libsimple_main.dll does not exist."
+        fi
+
     # Upload the build artifacts
     - name: Upload Build Artifacts
       if: success()
@@ -79,4 +97,3 @@ jobs:
       with:
         name: build-artifacts-${{ matrix.os }}
         path: ${{ steps.strings.outputs.build-output-dir }}/dist  
-  
