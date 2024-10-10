@@ -17,7 +17,7 @@ jobs:
         build_type: [Release]
         include:
           - os: windows-latest
-            cpp_compiler: cl
+            cpp_compiler: g++
             shell: pwsh
           - os: ubuntu-latest
             cpp_compiler: g++
@@ -38,6 +38,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # Install MinGW and g++ on Windows
+    - name: Install MinGW (g++ for Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install mingw
+        echo "::add-path::C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
+
     - name: Set reusable strings
       id: strings
       shell: bash
@@ -54,7 +61,7 @@ jobs:
       env:
         CXX: ${{ matrix.cpp_compiler }}
 
-    - name: Configure CMake (Windows)
+    - name: Configure CMake (Windows with g++)
       if: matrix.os == 'windows-latest'
       run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ${{ github.workspace }}
