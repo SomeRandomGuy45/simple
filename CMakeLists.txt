@@ -40,11 +40,12 @@ set_target_properties(simple PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist
 )
 
-# Custom command to run install_name_tool after building the executable
+if (APPLE)
 add_custom_command(TARGET simple POST_BUILD
     COMMAND install_name_tool -change @rpath/libsimple_main.dylib @executable_path/libsimple_main.dylib
     "${CMAKE_BINARY_DIR}/dist/simple"
 )
+endif()
 
 # Clean target
 set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
