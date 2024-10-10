@@ -43,7 +43,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         choco install mingw
-        echo "::add-path::C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
+        echo "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin" >> $GITHUB_PATH
 
     - name: Set reusable strings
       id: strings
