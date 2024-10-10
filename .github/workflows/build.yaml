@@ -1,4 +1,4 @@
-name: Build Simple
+name: Build SIMPLE
 
 on:
   push:
@@ -64,7 +64,7 @@ jobs:
     - name: Configure CMake (Windows with g++)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ${{ github.workspace }}
+        cmake -G "MinGW Makefiles" -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ${{ github.workspace }}
       env:
         CXX: ${{ matrix.cpp_compiler }}
 
