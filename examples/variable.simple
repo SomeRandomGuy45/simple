@@ -7,5 +7,7 @@ testPrint="hi"
 print(testPrint)
 local now_this_works = "local hi" 
 print(now_this_works)
-local func_test = print("hi")
-print(func_test)
+local func_test = print("TESTING THE IF STATMENT!")
+if func_test == "" then
+    print("func_test IS blank lol")
+end

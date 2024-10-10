@@ -168,8 +168,12 @@ void VM::Compile()
 					args2.push_back(arg); // Add non-empty argument to the vector
 				}
 			}
-			op1 = RunFuncWithArgs(args1, op3);
-			op2 = RunFuncWithArgs(args2, op4);
+			if (args1.size() > 1) {
+				op1 = RunFuncWithArgs(args1, op3);
+			}
+			if (args2.size() > 1) {
+				op2 = RunFuncWithArgs(args2, op4);
+			}
 
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
