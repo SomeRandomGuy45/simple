@@ -19,13 +19,14 @@ set(SRCS
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
 
 # Create a library target based on the platform
-set(LIBRARY_NAME simple_main)  # Removed the 'lib' prefix for the output
+set(LIBRARY_NAME simple_main)
 add_library(${LIBRARY_NAME} SHARED ${SRCS})
 
-# Set the output directory for the library
+# Set properties for the library
 set_target_properties(${LIBRARY_NAME} PROPERTIES
-    OUTPUT_NAME "${LIBRARY_NAME}"  # Ensuring the output name has 'lib' prefix
+    OUTPUT_NAME "${LIBRARY_NAME}"
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist
+    INSTALL_NAME "${CMAKE_BINARY_DIR}/dist/lib${LIBRARY_NAME}.dylib"
 )
 
 # Define main executable
@@ -34,9 +35,15 @@ add_executable(simple main.cpp)
 # Link the library to the executable
 target_link_libraries(simple PRIVATE ${LIBRARY_NAME})
 
-# Specify output directories for the executable
+# Set output directory for the executable
 set_target_properties(simple PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist
+)
+
+# Custom command to run install_name_tool after building the executable
+add_custom_command(TARGET simple POST_BUILD
+    COMMAND install_name_tool -change @rpath/libsimple_main.dylib @executable_path/libsimple_main.dylib
+    "${CMAKE_BINARY_DIR}/dist/simple"
 )
 
 # Clean target
