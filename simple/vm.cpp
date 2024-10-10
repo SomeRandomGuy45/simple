@@ -111,11 +111,15 @@ void VM::Compile()
 		std::vector<std::string> lineData;
 		while (std::getline(ss, arg, ',')) {
 			// Trim whitespace around the argument
-			arg.erase(0, arg.find_first_not_of(" \t\n"));
 			arg.erase(arg.find_last_not_of(" \t\n") + 1);
-			if (!arg.empty()) {
-				lineData.push_back(arg); // Add non-empty argument to the vector
+			arg.erase(0, arg.find_first_not_of(" \t\n")); // Trim leading whitespace
+
+			if (arg.size() > 1 && 
+				((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''))) {
+				// Remove the outermost quotes if they are the same
+				arg = arg.substr(1, arg.size() - 2); // Remove outer quotes
 			}
+			lineData.push_back(arg); 
 		}
 		if (lineData[0] == "END")
 		{
@@ -243,6 +247,7 @@ void VM::Compile()
 							{
 								continue;
 							}
+							std::string backUpVar = lineData[i];
 							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
 							if (var_names.find(lineData[i]) != var_names.end())
 							{
@@ -250,7 +255,7 @@ void VM::Compile()
 							}
 							else
 							{
-								args.push_back(lineData[i]);
+								args.push_back(backUpVar);
 							}
 						}
 						ReturnType result = func(args);
@@ -276,6 +281,7 @@ void VM::Compile()
 							{
 								continue;
 							}
+							std::string backUpVar = lineData[i];
 							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
 							if (var_names.find(lineData[i]) != var_names.end())
 							{
@@ -283,7 +289,7 @@ void VM::Compile()
 							}
 							else
 							{
-								args.push_back(lineData[i]);
+								args.push_back(backUpVar);
 							}
 						}
 					}
@@ -316,6 +322,7 @@ void VM::Compile()
 							{
 								continue;
 							}
+							std::string backUpVar = lineData[i];
 							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
 							if (var_names.find(lineData[i]) != var_names.end())
 							{
@@ -323,7 +330,7 @@ void VM::Compile()
 							}
 							else
 							{
-								args.push_back(lineData[i]);
+								args.push_back(backUpVar);
 							}
 						}
 						ReturnType result = func(args);
@@ -346,6 +353,7 @@ void VM::Compile()
 							{
 								continue;
 							}
+							std::string backUpVar = lineData[i];
 							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
 							if (var_names.find(lineData[i]) != var_names.end())
 							{
@@ -353,7 +361,7 @@ void VM::Compile()
 							}
 							else
 							{
-								args.push_back(lineData[i]);
+								args.push_back(backUpVar);
 							}
 						}
 					}

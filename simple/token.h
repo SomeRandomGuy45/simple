@@ -1,35 +1,46 @@
-#ifndef TOKEN
-#define TOKEN
-#pragma once
+#ifndef TOKEN_H
+#define TOKEN_H
+
+#include <fstream>
+#include <string>
+#include <vector>
 #include "vm.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-//The token class!
-//This holds all the data of some stuff about change it to bytecode
-//Such as current file, current line, and etc...
+// The Token class manages the conversion of script lines to bytecode.
+// It holds data about the current file, current line, and related operations.
 
 class Token {
 public:
-	Token() = default;
-	Token(std::string fileToRun);
-	~Token();
-	void ReOpenFile(std::string fileToRun);
-	void StartReadingFile();
+    Token() = default; // Default constructor
+    explicit Token(const std::string& fileToRun); // Constructor with file path
+    ~Token(); // Destructor
+    void ReOpenFile(const std::string& fileToRun); // Reopen the specified file
+    void StartReadingFile(); // Start reading the input file
+
 private:
-	VM* vm = new VM();
+    VM* vm = new VM(); // Pointer to the VM instance
 
-	std::string currentLine;
-	std::fstream currentFile;
-	std::fstream currentBytecodeFile;
+    std::string FilePath; // File path to the current file
+    std::string currentLine; // Current line being processed
+    std::fstream currentFile; // Stream for the current script file
+    std::fstream currentBytecodeFile; // Stream for the bytecode output file
+    std::vector<std::string> scriptLines; // Lines read from the script file
 
-	std::vector<std::string> scriptLines;
+    // Private helper methods can be declared here
+    void processScriptLines(); // Process each line from the script
+    void handleLine(std::string& line, int64_t currentLine, bool& trapInFunction); // Handle specific types of lines
+    void processFunctionCall(const std::smatch& match); // Handle function calls
+    void handleFunctionDefinition(const std::string& line, bool& trapInFunction); // Handle function definitions
+    void handleLibraryAddition(const std::string& line, int64_t currentLine); // Handle library additions
+    void handleVariableAssignment(const std::string& line, int64_t currentLine); // Handle variable assignments
 };
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif // TOKEN_H

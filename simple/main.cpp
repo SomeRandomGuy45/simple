@@ -135,20 +135,35 @@ int main(int argc, char** argv) {
 
     std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
 
-    while (!shouldKill) {
+    while (true) {
         outputFile.seekp(0);
         outputFile << "";
         clearFile(tempPath.string());
         std::string newLine = getInput();
+
+        if (std::cin.eof()) {
+            break;
+        }
+
         if (newLine.empty()) continue;
         
-        if (newLine == "exit()" || newLine == "exit" || newLine == ":q" || newLine == "quit" || newLine == "quit()") {
+        if (newLine == "exit()" || newLine == "quit()") {
             break;
         }
 
         if (newLine == "clear()") {
             std::cout << "\033[2J\033[1;1H";
             std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
+        }
+
+        if (newLine == "clear")
+        {
+            std::cout << "[HINT] Use clear() to clear the terminal.\n";
+        }
+
+        if (newLine == "exit" || newLine == ":q" || newLine == "quit")
+        {
+            std::cout << "[HINT] Use exit(), quit() or CTRL+D (EOF) to exit the program.\n";
         }
 
         outputFile << newLine << std::endl;
