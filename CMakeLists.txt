@@ -3,7 +3,7 @@ project(SimpleLibrary)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fvisibility=default")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 # Define source files
 set(SRCS
@@ -26,7 +26,6 @@ add_library(${LIBRARY_NAME} SHARED ${SRCS})
 set_target_properties(${LIBRARY_NAME} PROPERTIES
     OUTPUT_NAME "${LIBRARY_NAME}"
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist
-    INSTALL_NAME "${CMAKE_BINARY_DIR}/dist/lib${LIBRARY_NAME}.dylib"
 )
 
 # Define main executable
