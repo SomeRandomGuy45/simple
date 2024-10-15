@@ -125,8 +125,8 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
         }
     }
     else if (line.substr(0, 5) == "local") {
-        if (std::regex_match(line, match, std::regex(R"(local\s+(\w+)\s*=\s*(.+))"))) {
-            currentBytecodeFile << "DEFINEVAR," + std::string(match[1]) + "," + std::string(match[2]) << std::endl;
+        if (std::regex_match(line, match, std::regex("local\\s+(\\w+)\\s*=\\s*(?:\"([^\"]*(?:\\n[^\"]*)*)\"|([^\"\\n]+(?:\\n[^\"\\n]*)*))"))) {
+            currentBytecodeFile << "DEFINEVAR," + std::string(match[1]) + "," + (match[2].str().empty() ? match[3].str() : match[2].str()) << std::endl;
         }
     }
     else if (line.substr(0, 5) == "func!") {

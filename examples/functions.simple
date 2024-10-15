@@ -1,0 +1,3 @@
+func! myFunc()
+    print("hi")
+end!

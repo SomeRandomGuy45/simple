@@ -195,6 +195,21 @@ void VM::Compile()
 		{
 			continue;
 		}
+		else if (lineData[0] == "BEGINFUN")
+		{
+			functions[lineData[1]] = "";
+			functions_args[lineData[1]] = lineData[2];
+		}
+		else if (lineData[0] == "DOFUNCCALL")
+		{
+			std::string stuffAdd;
+			for (size_t i = 1; i < lineData.size(); i++)
+			{
+				stuffAdd += lineData[i] + ((lineData[i] == "EOF" || lineData[i] == "END") ? " " : ",");
+			}
+			functions[lineData[1]] = stuffAdd + "\n";
+			std::cout << functions[lineData[1]];
+		}
 		else if (lineData[0] == "DEFTOP")
 		{
 			lineData[1] = removeWhitespace(lineData[1], false);
