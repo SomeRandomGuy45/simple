@@ -1,6 +1,10 @@
 #ifndef CONFIG
 #define CONFIG
 #pragma once
+
+#define STRINGIFY(x) #x
+#define TO_STRING(x) STRINGIFY(x)
+
 #include "helper.h"
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +32,7 @@ extern "C" {
 #define SIMPLE_MINOR_VERSION 0
 #define SIMPLE_BUGFIX_VERSION 0
 
-#define SIMPLE_FULL_VERSION "v" #xSIMPLE_MAJOR_VERSION "." #xSIMPLE_MINOR_VERSION "." #xSIMPLE_BUGFIX_VERSION
+#define SIMPLE_FULL_VERSION "v" STRINGIFY(SIMPLE_MAJOR_VERSION) "." STRINGIFY(SIMPLE_MINOR_VERSION )"." STRINGIFY(SIMPLE_BUGFIX_VERSION)
 
 #ifndef EXIT_SUCCESS
 #define EXIT_SUCCESS 0

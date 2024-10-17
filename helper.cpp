@@ -1,5 +1,9 @@
 #include "helper.h"
 
+std::vector<std::string> libLocations = {
+    LIBPATH,
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
