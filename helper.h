@@ -50,6 +50,13 @@
 #define GET_FUNC(lib, func) dlsym(lib, func)
 #endif
 
+// Locations where libs can be placed
+// Will add when I figure a install location for simp
+// {Location}
+std::vector<std::string> libLocations = {
+    LIBPATH,
+};
+
 #ifdef _WIN32
 inline uint64_t getTotalRAM() {
     MEMORYSTATUSEX memInfo;

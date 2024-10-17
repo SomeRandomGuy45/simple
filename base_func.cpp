@@ -63,7 +63,7 @@ ReturnType runSysCmd(std::vector<std::string> args)
 
 ReturnType sinFunc(std::vector<std::string> args)
 {
-    if (args.size()!= 1)
+    if (args.size() != 1)
     {
         std::cout << "[SIN] Error: Invalid number of arguments\n";
         return nullptr;
@@ -71,6 +71,32 @@ ReturnType sinFunc(std::vector<std::string> args)
     double angle = std::stod(args[0]);
     double result = sin(angle);
     return std::to_string(result);
+}
+
+ReturnType allocMemory(std::vector<std::string> args)
+{
+    if (args.size() != 1)
+    {
+        std::cout << "[ALLOC] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    int size = 0;
+    try {
+        size = std::stol(args[0]);
+    } 
+    catch (const std::invalid_argument& e)
+    {
+        std::cout << "[ALLOC] Error: Invalid size argument\n";
+        return nullptr;
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cout << "[ALLOC] Error: Size argument out of range\n";
+        return nullptr;
+    }
+    char* value = (char *)malloc(size);
+    if (value == nullptr) return nullptr;
+
 }
 
 //The holder of all the functions
