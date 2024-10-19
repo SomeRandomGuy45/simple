@@ -6,9 +6,9 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-#include <conio.h>
 
 #ifdef _WIN32
+#include <conio.h>
 #include <windows.h>
 // Handle CTRL+C in Windows
 static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType) {
