@@ -16,7 +16,9 @@ extern "C" {
 class Token {
 public:
     Token() = default; // Default constructor
-    explicit Token(const std::string& fileToRun); // Constructor with file path
+    Token(const std::string& fileToRun,
+                   const std::string& fileOutput = "!",
+                   bool ShouldKill = false); // Constructor with file path
     ~Token(); // Destructor
     void ReOpenFile(const std::string& fileToRun); // Reopen the specified file
     void StartReadingFile(); // Start reading the input file
@@ -25,10 +27,14 @@ private:
     VM* vm = new VM(); // Pointer to the VM instance
 
     std::string FilePath; // File path to the current file
+    std::string FileOutput; // Output file path for bytecode (optional)
     std::string currentLine; // Current line being processed
     std::fstream currentFile; // Stream for the current script file
     std::fstream currentBytecodeFile; // Stream for the bytecode output file
     std::vector<std::string> scriptLines; // Lines read from the script file
+
+
+    bool shouldKill = false;
 
     // Private helper methods can be declared here
     void processScriptLines(); // Process each line from the script

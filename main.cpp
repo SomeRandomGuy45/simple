@@ -6,15 +6,22 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <conio.h>
 
 #ifdef _WIN32
 #include <windows.h>
 //https://asawicki.info/news_1465_handling_ctrlc_in_windows_console_application
 static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType) {
     switch (dwCtrlType) {
-        case CTRL_C_EVENT: // Ctrl+C
+        case CTRL_C_EVENT:
             return TRUE;
-        case CTRL_SHUTDOWN_EVENT: // System is shutting down
+		case CTRL_BREAK_EVENT:
+			return TRUE;
+		case CTRL_CLOSE_EVENT:
+			return TRUE;
+		case CTRL_LOGOFF_EVENT:
+			return TRUE;
+        case CTRL_SHUTDOWN_EVENT:
             return TRUE;
     }
     return FALSE;
@@ -22,9 +29,8 @@ static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType) {
 
 #else
 #include <unistd.h>
+#include <limits.h>
 #include <termios.h>
-
-#define HAS_GET_KEY true
 
 char getKey() {
     struct termios oldt, newt;
@@ -46,8 +52,35 @@ void catchSignal(int sigNumber) {
 static std::string getInput() {
     std::string input;
     std::cout << "> ";
-    std::getline(std::cin, input);
-    return input;
+
+    while (true) {
+        if (_kbhit()) { // Check if a key has been pressed
+            char ch = _getch(); // Get the character without waiting for enter
+            switch (ch) {
+                case '\r': // If Enter key is pressed
+                    std::cout << std::endl; // Move to the next line
+                    return input; // Return the input collected so far
+
+                case 8: // Backspace character
+                    if (!input.empty()) { // Only handle if there's something to delete
+                        input.pop_back(); // Remove the last character
+                        std::cout << "\b \b"; // Move back, print a space, and move back again
+                    }
+                    break;
+
+                case 3 || 32 || 72 || 80 || 75 || 77:
+                    break;
+
+                default: // For any other character
+                    input += ch; // Append the character to input string
+                    std::cout << ch; // Echo the character
+                    break;
+            }
+        }
+        Sleep(50); // Sleep a bit to reduce CPU usage
+    }
+
+    return input; // Return the collected input
 }
 
 std::wstring StringToWString(const std::string& str) {
@@ -62,13 +95,14 @@ static void clearFile(const std::string& tempPath) {
     file.close();
 }
 
-static bool runArgs(const std::string& arg) {
+static bool runArgs(const std::string& arg, const std::string& command, const std::string& commandBefore) {
     if (arg == "--help" || arg == "-h" || arg == "-?") {
         #ifdef _WIN32
         std::wstring name = L"Simple compiler " + std::wstring(StringToWString(SIMPLE_FULL_VERSION)) +
                             L"\nUsage: simple [options] [script.simple]\nOptions:\n" +
                             L"  -h, --help, -?     Display this help message\n" +
-                            L"  -v, --version      Display the version of Simple compiler\n";
+                            L"  -v, --version      Display the version of Simple compiler\n" +
+                            L"  -o, --output       Build's a .simple file and does not run it\n";
         MessageBoxW(NULL, name.c_str(), L"Help", MB_OK | MB_ICONQUESTION);
         #endif
         std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << "\n";
@@ -76,9 +110,21 @@ static bool runArgs(const std::string& arg) {
         std::cout << "Options:\n";
         std::cout << "  -h, --help, -?     Display this help message\n";
         std::cout << "  -v, --version      Display the version of Simple compiler\n";
+        std::cout << "  -o, --output       Build's a .simple file and does not run it\n";
         return true;
     } else if (arg == "-v" || arg == "--version") {
         std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << "\n";
+        return true;
+    } else if (arg == "-o" || arg == "--output") {
+        Token* token = new Token(commandBefore, command, true);
+        try {
+            token->StartReadingFile();
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << "\n";
+        } catch (...) {
+            std::cerr << "Unknown error occurred!\n";
+        }
+        delete token;
         return true;
     }
     return false;
@@ -87,8 +133,11 @@ static bool runArgs(const std::string& arg) {
 static bool allArgs(int argc, char** argv) {
     bool KILL = false;
     if (argc >= 2) {
-        for (int i = 0; i < argc; i++) {
-            bool r_val = runArgs(std::string(argv[i]));
+        for (int i = 1; i < argc; i++) {  // Ensure i starts from 1 to avoid invalid `argv[i-1]`
+            bool r_val = false;
+            std::string argBefore = (i > 0) ? argv[i - 1] : "";  // Check bounds
+            std::string argAfter = (i < argc - 1) ? argv[i + 1] : ""; // Check bounds
+            r_val = runArgs(std::string(argv[i]), argAfter, argBefore);
             if (r_val) {
                 KILL = true;
             }
@@ -104,7 +153,7 @@ int main(int argc, char** argv) {
     }
 
     #ifdef _WIN32
-    SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
+    SetConsoleCtrlHandler((PHANDLER_ROUTINE)console_ctrl_handler, TRUE);
     #else
     signal(SIGINT, catchSignal);
     signal(SIGTERM, catchSignal);
@@ -112,7 +161,6 @@ int main(int argc, char** argv) {
 
     std::srand(static_cast<unsigned int>(std::time(0)));
     std::filesystem::path tempPath = std::filesystem::temp_directory_path() / ".simple";
-    std::ofstream outputFile(tempPath, std::ios::in | std::ios::out | std::ios::trunc);
 
     Token* token = new Token(tempPath.string());
 
@@ -132,6 +180,8 @@ int main(int argc, char** argv) {
         delete token;
         return EXIT_SUCCESS;
     }
+
+    std::ofstream outputFile(tempPath, std::ios::in | std::ios::out | std::ios::trunc);
 
     std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
 
@@ -156,18 +206,17 @@ int main(int argc, char** argv) {
             std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
         }
 
-        if (newLine == "clear")
-        {
+        if (newLine == "clear") {
             std::cout << "[HINT] Use clear() to clear the terminal.\n";
         }
 
-        if (newLine == "exit" || newLine == ":q" || newLine == "quit")
-        {
-            std::cout << "[HINT] Use exit(), quit() or CTRL+D (EOF) to exit the program.\n";
+        if (newLine == "exit" || newLine == ":q" || newLine == "quit") {
+            std::cout << "[HINT] Use exit(), quit() or CTRL+D (EOF) (Must be on linux or macos) to exit the program.\n";
         }
 
         outputFile << newLine << std::endl;
-        delete token;
+
+        delete token; // Ensure proper cleanup
         token = new Token(tempPath.string());
 
         try {
@@ -179,6 +228,6 @@ int main(int argc, char** argv) {
         }
     }
 
-    delete token;
+    delete token; // Final cleanup
     return EXIT_SUCCESS;
 }

@@ -21,6 +21,8 @@ extern std::unordered_map<std::string, FunctionPtr> outerFunctions;
 
 extern std::unordered_map<std::string, void*> loadedLibraries;
 
+extern std::vector<void*> allocatedBlocks;
+
 ReturnType print(std::vector<std::string> args);
 
 ReturnType writeData(std::vector<std::string> args);

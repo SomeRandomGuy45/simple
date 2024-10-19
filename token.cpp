@@ -8,12 +8,38 @@
 #include <vector>
 #include <string>
 
+std::string getCurrentWorkingDirectory() {
+    #ifdef _WIN32
+    // Wide string buffer for Windows
+    wchar_t wbuffer[FILENAME_MAX];
+    if (GetCurrentDirectoryW(FILENAME_MAX, wbuffer) == 0) {
+        throw std::runtime_error("Error: Unable to get current working directory");
+    }
+
+    // Convert the wide string (wchar_t*) to a standard string (std::string)
+    char buffer[FILENAME_MAX];
+    wcstombs(buffer, wbuffer, FILENAME_MAX); // Wide char to multibyte char conversion
+    return std::string(buffer);
+    
+    #else
+    // POSIX (Linux/macOS) way to get the current working directory
+    char buffer[FILENAME_MAX];
+    if (getcwd(buffer, sizeof(buffer)) == NULL) {
+        throw std::runtime_error("Error: Unable to get current working directory");
+    }
+    return std::string(buffer);
+    #endif
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Constructor
-Token::Token(const std::string& fileToRun) {
+Token::Token(const std::string &fileToRun, const std::string &fileOutput, bool ShouldKill)
+{
+    shouldKill = ShouldKill;
+    FileOutput = fileOutput;
     if (!std::filesystem::exists(fileToRun)) {
         std::ofstream file(fileToRun);
         file.close();
@@ -43,13 +69,34 @@ Token::~Token() {
     if (currentBytecodeFile.is_open()) {
         currentBytecodeFile.close();
     }
+    for (auto& pointer_Val : allocatedBlocks)
+    {
+        std::free(pointer_Val);
+    }
 }
 
 // Start reading the input file
 void Token::StartReadingFile() {
     std::srand(static_cast<unsigned int>(std::time(0)));
-    FilePath = std::filesystem::temp_directory_path().string() + getRandomFileName();
-
+    if (FileOutput == "!")
+    {
+        FilePath = std::filesystem::temp_directory_path().string() + getRandomFileName();
+    }
+    else
+    {
+        std::string ending = "";
+        if (std::filesystem::exists(FileOutput) && std::filesystem::is_directory(FileOutput))
+        {
+            ending = "/";
+        }
+        else
+        {
+            ending = ".sbcc";
+        }
+        FileOutput = FileOutput == "" ? getCurrentWorkingDirectory() + "/" : getCurrentWorkingDirectory() + "/" + FileOutput + ending;
+        std::cout << FileOutput << std::endl;
+        FilePath = ending == "/" ? FileOutput + getRandomFileName() : FileOutput;   
+    }
     if (!std::filesystem::exists(FilePath)) {
         std::ofstream file(FilePath);
         file.close();
@@ -96,6 +143,11 @@ void Token::processScriptLines() {
 
         line = removeWhitespace(removeComments(line), false);
         handleLine(line, currentLine, trapInFunction);
+    }
+
+    if (shouldKill)
+    {
+        return;
     }
 
     vm->changeFilePath(FilePath);

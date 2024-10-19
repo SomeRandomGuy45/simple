@@ -13,6 +13,7 @@ extern "C" {
 
 std::unordered_map<std::string, FunctionPtr> outerFunctions{};
 std::unordered_map<std::string, void*> loadedLibraries{};
+std::vector<void*> allocatedBlocks;
 
 ReturnType print(std::vector<std::string> args)
 {
@@ -80,9 +81,9 @@ ReturnType allocMemory(std::vector<std::string> args)
         std::cout << "[ALLOC] Error: Invalid number of arguments\n";
         return nullptr;
     }
-    int size = 0;
+    size_t size = 0;
     try {
-        size = std::stol(args[0]);
+        size = std::stoull(args[0]);
     } 
     catch (const std::invalid_argument& e)
     {
@@ -94,9 +95,20 @@ ReturnType allocMemory(std::vector<std::string> args)
         std::cout << "[ALLOC] Error: Size argument out of range\n";
         return nullptr;
     }
-    char* value = (char *)malloc(size);
-    if (value == nullptr) return nullptr;
-
+    void* newAllocMem = nullptr;
+    try {
+        newAllocMem = std::malloc(size);
+    } catch (...) {
+        std::cout << "[ALLOC] Error: A unknown error has occurred. Some issues could be there is not enough ram that can be used to allocate.\n";
+        return nullptr;
+    }
+    if (newAllocMem == nullptr)
+    {
+        std::cout << "[ALLOC] Error: Failed to allocate memory\n";
+        return nullptr;
+    }
+    allocatedBlocks.push_back(newAllocMem);
+    return std::to_string(allocatedBlocks.size());
 }
 
 //The holder of all the functions
@@ -107,7 +119,8 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"writeToFile", [](std::vector<std::string> args) -> ReturnType { return writeData(args); }},
         {"readFile", [](std::vector<std::string> args) -> ReturnType { return readData(args); }},
         {"system", [](std::vector<std::string> args) -> ReturnType { return runSysCmd(args); }},
-        {"sin", [](std::vector<std::string> args) -> ReturnType { return sinFunc(args); }}
+        {"sin", [](std::vector<std::string> args) -> ReturnType { return sinFunc(args); }},
+        {"allocMemory", [](std::vector<std::string> args) -> ReturnType { return allocMemory(args); } }
 	};
 }
 
