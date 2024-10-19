@@ -14,8 +14,10 @@
 static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType) {
     switch (dwCtrlType) {
         case CTRL_C_EVENT:
+            std::cout << "^C" << std::endl;
             return TRUE;
         case CTRL_BREAK_EVENT:
+            std::cout << "^Break" << std::endl;
             return TRUE;
         case CTRL_CLOSE_EVENT:
             return TRUE;
@@ -34,31 +36,46 @@ static std::string getInput() {
     while (true) {
         if (_kbhit()) { // Check if a key has been pressed
             char ch = _getch(); // Get the character without waiting for enter
+
             switch (ch) {
                 case '\r': // If Enter key is pressed
-                    std::cout << std::endl; // Move to the next line
-                    return input; // Return the input collected so far
+                    std::cout << std::endl;
+                    return input;
 
                 case 8: // Backspace character
-                    if (!input.empty()) { // Only handle if there's something to delete
-                        input.pop_back(); // Remove the last character
-                        std::cout << "\b \b"; // Move back, print a space, and move back again
+                    if (!input.empty()) {
+                        input.pop_back();
+                        std::cout << "\b \b";
                     }
                     break;
 
-                case 3 || 32 || 72 || 80 || 75 || 77:
+                case 3: // Ctrl+C
+                    std::cout << "^C" << std::endl;
                     break;
 
-                default: // For any other character
-                    input += ch; // Append the character to input string
-                    std::cout << ch; // Echo the character
+                case 4: // Ctrl+D
+                    std::cout << "^D" << std::endl;
+                    return "^D"; // Simulate EOF on Windows
+
+                case 32: // Space
+                    input += ' ';
+                    std::cout << ' ';
+                    break;
+
+                default:
+                    if (ch < 32) { // Control characters are typically less than 32 in ASCII
+                        std::cout << "^" << static_cast<char>(ch + 'A' - 1); // Convert control characters to '^X' form
+                    } else {
+                        input += ch; // Append the character to input string
+                        std::cout << ch; // Echo the character
+                    }
                     break;
             }
         }
-        Sleep(50); // Sleep a bit to reduce CPU usage
+        Sleep(50);
     }
 
-    return input; // Return the collected input
+    return input;
 }
 
 
@@ -85,30 +102,41 @@ static std::string getInput() {
     std::cout << "> ";
 
     while (true) {
-        if (std::cin.rdbuf()->in_avail() > 0) { // Check if input is available
-            char ch = getKey(); // Get the character without waiting for enter
-            switch (ch) {
-                case '\n': // If Enter key is pressed
-                    std::cout << std::endl; // Move to the next line
-                    return input; // Return the input collected so far
+        char ch = getKey(); // Get the character without waiting for enter
 
-                case 8: // Backspace character
-                    if (!input.empty()) { // Only handle if there's something to delete
-                        input.pop_back(); // Remove the last character
-                        std::cout << "\b \b"; // Move back, print a space, and move back again
-                    }
-                    break;
+        switch (ch) {
+            case '\n': // If Enter key is pressed
+                std::cout << std::endl;
+                return input;
 
-                default: // For any other character
-                    input += ch; // Append the character to input string
-                    std::cout << ch; // Echo the character
-                    break;
-            }
+            case 8: // Backspace character
+                if (!input.empty()) {
+                    input.pop_back();
+                    std::cout << "\b \b";
+                }
+                break;
+
+            case 3: // Ctrl+C
+                std::cout << "^C" << std::endl;
+                break;
+
+            case 4: // Ctrl+D
+                std::cout << "^D" << std::endl;
+                return ""; // Simulate EOF
+
+            default:
+                if (ch < 32) { // Handle control characters
+                    std::cout << "^" << static_cast<char>(ch + 'A' - 1);
+                } else {
+                    input += ch;
+                    std::cout << ch;
+                }
+                break;
         }
-        usleep(50000); // Sleep a bit to reduce CPU usage (50 ms)
+        usleep(50000);
     }
 
-    return input; // Return the collected input
+    return input;
 }
 
 void catchSignal(int sigNumber) {
@@ -230,7 +258,7 @@ int main(int argc, char** argv) {
 
         if (newLine.empty()) continue;
         
-        if (newLine == "exit()" || newLine == "quit()") {
+        if (newLine == "exit()" || newLine == "quit()" || newLine == "^D") {
             break;
         }
 
@@ -244,7 +272,7 @@ int main(int argc, char** argv) {
         }
 
         if (newLine == "exit" || newLine == ":q" || newLine == "quit") {
-            std::cout << "[HINT] Use exit(), quit() or CTRL+D (EOF) (Must be on linux or macos) to exit the program.\n";
+            std::cout << "[HINT] Use exit(), quit() or CTRL+D (EOF) to exit the program.\n";
         }
 
         outputFile << newLine << std::endl;
