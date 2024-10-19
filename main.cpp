@@ -10,44 +10,22 @@
 
 #ifdef _WIN32
 #include <windows.h>
-//https://asawicki.info/news_1465_handling_ctrlc_in_windows_console_application
+// Handle CTRL+C in Windows
 static BOOL WINAPI console_ctrl_handler(DWORD dwCtrlType) {
     switch (dwCtrlType) {
         case CTRL_C_EVENT:
             return TRUE;
-		case CTRL_BREAK_EVENT:
-			return TRUE;
-		case CTRL_CLOSE_EVENT:
-			return TRUE;
-		case CTRL_LOGOFF_EVENT:
-			return TRUE;
+        case CTRL_BREAK_EVENT:
+            return TRUE;
+        case CTRL_CLOSE_EVENT:
+            return TRUE;
+        case CTRL_LOGOFF_EVENT:
+            return TRUE;
         case CTRL_SHUTDOWN_EVENT:
             return TRUE;
     }
     return FALSE;
 }
-
-#else
-#include <unistd.h>
-#include <limits.h>
-#include <termios.h>
-
-char getKey() {
-    struct termios oldt, newt;
-    char ch;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO); // Disable canonical mode and echo
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    ch = getchar();
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    return ch;
-}
-
-void catchSignal(int sigNumber) {
-    return;
-}
-#endif
 
 static std::string getInput() {
     std::string input;
@@ -82,6 +60,61 @@ static std::string getInput() {
 
     return input; // Return the collected input
 }
+
+
+#else
+#include <unistd.h>
+#include <limits.h>
+#include <termios.h>
+
+// Function to read a single character
+char getKey() {
+    struct termios oldt, newt;
+    char ch;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO); // Disable canonical mode and echo
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    ch = getchar();
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    return ch;
+}
+
+static std::string getInput() {
+    std::string input;
+    std::cout << "> ";
+
+    while (true) {
+        if (std::cin.rdbuf()->in_avail() > 0) { // Check if input is available
+            char ch = getKey(); // Get the character without waiting for enter
+            switch (ch) {
+                case '\n': // If Enter key is pressed
+                    std::cout << std::endl; // Move to the next line
+                    return input; // Return the input collected so far
+
+                case 8: // Backspace character
+                    if (!input.empty()) { // Only handle if there's something to delete
+                        input.pop_back(); // Remove the last character
+                        std::cout << "\b \b"; // Move back, print a space, and move back again
+                    }
+                    break;
+
+                default: // For any other character
+                    input += ch; // Append the character to input string
+                    std::cout << ch; // Echo the character
+                    break;
+            }
+        }
+        Sleep(50); // Sleep a bit to reduce CPU usage (50 ms)
+    }
+
+    return input; // Return the collected input
+}
+
+void catchSignal(int sigNumber) {
+    return;
+}
+#endif
 
 std::wstring StringToWString(const std::string& str) {
     size_t size_needed = mbstowcs(nullptr, str.c_str(), 0);
