@@ -7,6 +7,9 @@
 #include <stdexcept>
 #include <vector>
 #include <string>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 std::string getCurrentWorkingDirectory() {
     #ifdef _WIN32
