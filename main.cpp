@@ -105,7 +105,7 @@ static std::string getInput() {
                     break;
             }
         }
-        Sleep(50); // Sleep a bit to reduce CPU usage (50 ms)
+        usleep(50000); // Sleep a bit to reduce CPU usage (50 ms)
     }
 
     return input; // Return the collected input
