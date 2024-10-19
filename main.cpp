@@ -77,8 +77,6 @@ static std::string getInput() {
 
     return input;
 }
-
-
 #else
 #include <unistd.h>
 #include <limits.h>
@@ -99,7 +97,7 @@ char getKey() {
 
 static std::string getInput() {
     std::string input;
-    std::cout << "> ";
+    std::cout << "> " << std::flush;
 
     while (true) {
         char ch = getKey(); // Get the character without waiting for enter
@@ -109,10 +107,10 @@ static std::string getInput() {
                 std::cout << std::endl;
                 return input;
 
-            case 8: // Backspace character
+            case 127: // Backspace character (common on most systems)
                 if (!input.empty()) {
                     input.pop_back();
-                    std::cout << "\b \b";
+                    std::cout << "\b \b"; // Move back, print space, and move back again
                 }
                 break;
 
@@ -122,18 +120,17 @@ static std::string getInput() {
 
             case 4: // Ctrl+D
                 std::cout << "^D" << std::endl;
-                return ""; // Simulate EOF
+                return "^D"; // Simulate EOF
 
             default:
                 if (ch < 32) { // Handle control characters
                     std::cout << "^" << static_cast<char>(ch + 'A' - 1);
                 } else {
                     input += ch;
-                    std::cout << ch;
+                    std::cout << ch << std::flush; // Flush to make sure it's printed immediately
                 }
                 break;
         }
-        usleep(50000);
     }
 
     return input;
@@ -163,7 +160,8 @@ static bool runArgs(const std::string& arg, const std::string& command, const st
                             L"\nUsage: simple [options] [script.simple]\nOptions:\n" +
                             L"  -h, --help, -?     Display this help message\n" +
                             L"  -v, --version      Display the version of Simple compiler\n" +
-                            L"  -o, --output       Build's a .simple file and does not run it\n";
+                            L"  -o, --output       Build's a .simple file and does not run it\n" + 
+                            L"  -sr --sbcc_run     Runs a .sbcc file\n";
         MessageBoxW(NULL, name.c_str(), L"Help", MB_OK | MB_ICONQUESTION);
         #endif
         std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << "\n";
@@ -172,6 +170,7 @@ static bool runArgs(const std::string& arg, const std::string& command, const st
         std::cout << "  -h, --help, -?     Display this help message\n";
         std::cout << "  -v, --version      Display the version of Simple compiler\n";
         std::cout << "  -o, --output       Build's a .simple file and does not run it\n";
+        std::cout << "  -sr --sbcc_run     Runs a .sbcc file\n";
         return true;
     } else if (arg == "-v" || arg == "--version") {
         std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << "\n";
@@ -186,6 +185,11 @@ static bool runArgs(const std::string& arg, const std::string& command, const st
             std::cerr << "Unknown error occurred!\n";
         }
         delete token;
+        return true;
+    } else if (arg == "-sr" || arg == "--sbcc_run") {
+        VM* vm = new VM(command);
+        vm->Compile();
+        delete vm;
         return true;
     }
     return false;

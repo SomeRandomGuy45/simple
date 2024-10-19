@@ -232,7 +232,7 @@ void VM::Compile()
 				}
 				if (minRam > totalRAM)
 				{
-					std::cerr << "Error: Requested minimum RAM (" << minRam << ") is greater than available RAM (" << totalRAM << ")." << std::endl;
+					std::cerr << "Error: Requested minimum RAM (" << minRam << ") is greater than available RAM (" << totalRAM << ")" << std::endl;
 					return;
 				}
 			}
@@ -240,7 +240,7 @@ void VM::Compile()
 			{
 				if (SIMPLE_FULL_VERSION != lineData[2])
 				{
-					std::cerr << "Error: Requested minimum version (" << lineData[2] << ") is not equal to the current version (" << SIMPLE_FULL_VERSION << ")." << std::endl;
+					std::cerr << "Error: Requested minimum version (" << lineData[2] << ") is not equal to the current version (" << SIMPLE_FULL_VERSION << ")" << std::endl;
                     return;
 				}
 			}

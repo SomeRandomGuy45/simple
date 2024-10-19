@@ -96,8 +96,7 @@ void Token::StartReadingFile() {
         {
             ending = ".sbcc";
         }
-        FileOutput = FileOutput == "" ? getCurrentWorkingDirectory() + "/" : getCurrentWorkingDirectory() + "/" + FileOutput + ending;
-        std::cout << FileOutput << std::endl;
+        FileOutput = FileOutput == "" ? getCurrentWorkingDirectory() + "/" + getRandomFileName() : getCurrentWorkingDirectory() + "/" + FileOutput + ending;
         FilePath = ending == "/" ? FileOutput + getRandomFileName() : FileOutput;   
     }
     if (!std::filesystem::exists(FilePath)) {
