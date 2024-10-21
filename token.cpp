@@ -124,17 +124,22 @@ void Token::processScriptLines() {
 
     for (std::string& line : scriptLines) {
         currentLine += 1;
-
         if (line.empty()) {
             continue;
         }
 
         if (line.substr(0, 2) == "/*") {
             trapInComment = true;
+            continue;
         }
         if (line.substr(0, 2) == "*/") {
             trapInComment = false;
         }
+
+        if (line.substr(0, 2) == "//") {
+            continue;
+        }
+
         if (trapInComment) {
             continue;
         }
@@ -159,7 +164,6 @@ void Token::processScriptLines() {
 // Handle different types of lines
 void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunction) {
     std::smatch match;
-
     // Function call
     if (std::regex_match(line, match, std::regex(R"(\s*(\w+(?:\.\w+)?)\s*\((.*?)\))"))) {
         processFunctionCall(match);
@@ -170,6 +174,9 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     }
     // Local variable assignment
     else if (std::regex_match(line, match, std::regex(R"(local\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^()]*)\))"))) {
+        currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
+    }
+    else if (std::regex_match(line, match, std::regex(R"(([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^()]*)\))"))) {
         currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
     }
     // Other cases...

@@ -115,7 +115,46 @@ ReturnType allocMemory(std::vector<std::string> args)
         return nullptr;
     }
     allocatedBlocks.push_back(newAllocMem);
-    return std::to_string(allocatedBlocks.size());
+    return std::to_string(allocatedBlocks.size() - 1);
+}
+
+ReturnType freeMemory(std::vector<std::string> args)
+{
+    if (args.size() != 1)
+    {
+        std::cout << "[FREE] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    size_t index = 0;
+    try {
+        index = std::stoull(args[0]);
+    } 
+    catch (const std::invalid_argument& e)
+    {
+        std::cout << "[FREE] Error: Invalid index argument\n";
+        return nullptr;
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cout << "[FREE] Error: Index argument out of range\n";
+        return nullptr;
+    }
+    if (index < allocatedBlocks.size()) {
+        void* toBeFreed = allocatedBlocks[index];
+        try {
+            std::free(toBeFreed);
+            allocatedBlocks[index] = nullptr;
+        } catch (const std::exception& e) {
+            std::cerr << "[FREE] Error: Failed to free memory: " << e.what() << "\n";
+            return nullptr;
+        } catch (...) {
+            std::cerr << "[FREE] Error: A unknown error has occurred.\n";
+            return nullptr;
+        }
+        return "success";
+    }
+    std::cout << "[FREE] Out of range!\n";
+    return nullptr;
 }
 
 //The holder of all the functions
@@ -127,7 +166,8 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"readFile", [](std::vector<std::string> args) -> ReturnType { return readData(args); }},
         {"system", [](std::vector<std::string> args) -> ReturnType { return runSysCmd(args); }},
         {"sin", [](std::vector<std::string> args) -> ReturnType { return sinFunc(args); }},
-        {"allocMemory", [](std::vector<std::string> args) -> ReturnType { return allocMemory(args); } }
+        {"allocMemory", [](std::vector<std::string> args) -> ReturnType { return allocMemory(args); }},
+        {"freeMemory", [](std::vector<std::string> args) -> ReturnType { return freeMemory(args); }}
 	};
 }
 
