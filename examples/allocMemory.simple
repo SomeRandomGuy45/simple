@@ -6,5 +6,5 @@
 // Its okay if you don't use it since it will reclaim the memory used
 local test = allocMemory(1024)
 print(test) // Returns 0 since std::vector starts at 0!
-returnVal = freeMemory(test) // Returns success, if successful when the memory is free
-print(returnVal)
+test = freeMemory(test) // Returns success, if successful when the memory is free
+print(test)

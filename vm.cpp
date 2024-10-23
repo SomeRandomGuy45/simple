@@ -260,21 +260,23 @@ void VM::Compile()
 				{
 					if (lineData.size() > 0)
 					{
-						for (size_t i = 1; i < lineData.size(); i++)
+						for (size_t i = 2; i < lineData.size(); i++)
 						{
-							if (lineData[i] == func_Name || lineData[i] == lineData[1])
+							if ((lineData[i] == func_Name || (lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
 							{
 								continue;
 							}
 							std::string backUpVar = lineData[i];
 							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
-							if (var_names.find(lineData[i]) != var_names.end())
-							{
-								args.push_back(var_names.find(lineData[i])->second);
-							}
-							else
-							{
-								args.push_back(backUpVar);
+							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+								for (const auto& var : var_names)
+								{
+									if (var.first == lineData[i]) {
+                                        args.push_back(var.second);  // Use the stored value if found
+                                    }
+								}
+							} else {
+								args.push_back(backUpVar);  // Use the original string if not found
 							}
 						}
 						ReturnType result = func(args);
@@ -294,21 +296,23 @@ void VM::Compile()
 					std::vector<std::string> args;
 					if (lineData.size() > 0)
 					{
-						for (size_t i = 1; i < lineData.size(); i++)
+						for (size_t i = 2; i < lineData.size(); i++)
 						{
-							if (lineData[i] == func_name || lineData[i] == lineData[1])
+							if ((lineData[i] == func_name || (lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
 							{
 								continue;
 							}
 							std::string backUpVar = lineData[i];
 							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
-							if (var_names.find(lineData[i]) != var_names.end())
-							{
-								args.push_back(var_names.find(lineData[i])->second);
-							}
-							else
-							{
-								args.push_back(backUpVar);
+							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+								for (const auto& var : var_names)
+								{
+									if (var.first == lineData[i]) {
+                                        args.push_back(var.second);  // Use the stored value if found
+                                    }
+								}
+							} else {
+								args.push_back(backUpVar);  // Use the original string if not found
 							}
 						}
 					}
@@ -343,13 +347,16 @@ void VM::Compile()
 							}
 							std::string backUpVar = lineData[i];
 							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
-							if (var_names.find(lineData[i]) != var_names.end())
-							{
-								args.push_back(var_names.find(lineData[i])->second);
-							}
-							else
-							{
-								args.push_back(backUpVar);
+
+							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+								for (const auto& var : var_names)
+								{
+									if (var.first == lineData[i]) {
+                                        args.push_back(var.second);  // Use the stored value if found
+                                    }
+								}
+							} else {
+								args.push_back(backUpVar);  // Use the original string if not found
 							}
 						}
 						ReturnType result = func(args);
@@ -374,13 +381,16 @@ void VM::Compile()
 							}
 							std::string backUpVar = lineData[i];
 							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
-							if (var_names.find(lineData[i]) != var_names.end())
-							{
-								args.push_back(var_names.find(lineData[i])->second);
-							}
-							else
-							{
-								args.push_back(backUpVar);
+
+							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+								for (const auto& var : var_names)
+								{
+									if (var.first == lineData[i]) {
+                                        args.push_back(var.second);  // Use the stored value if found
+                                    }
+								}
+							} else {
+								args.push_back(backUpVar);  // Use the original string if not found
 							}
 						}
 					}
