@@ -172,6 +172,13 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     else if (std::regex_match(line, match, std::regex(R"(if\s+(.+?)\s*(==|~=|>=|>|<=|<)\s*(.+?)\s*then)"))) {
         currentBytecodeFile << "IFOP," << std::string(match[1]) << "," << std::string(match[2]) << "," << std::string(match[3]) << std::endl;
     }
+    // Else If statement
+    else if (std::regex_match(line, match, std::regex(R"(elseif\s+(.+?)\s*(==|~=|>=|>|<=|<)\s*(.+?)\s*then)"))) {
+        currentBytecodeFile << "ELSEIFOP," << std::string(match[1]) << "," << std::string(match[2]) << "," << std::string(match[3]) << std::endl;
+    }
+    else if (line.substr(0,4) == "else") {
+        currentBytecodeFile << "ELSE" << std::endl;
+    }
     // Local variable assignment
     else if (std::regex_match(line, match, std::regex(R"(local\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^()]*)\))"))) {
         currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;

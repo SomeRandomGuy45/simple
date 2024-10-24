@@ -10,4 +10,6 @@ print(now_this_works)
 local func_test = print("TESTING THE IF STATMENT!")
 if func_test == "" then
     print("func_test IS blank lol")
+else
+    print("func_test is not blank lol")
 end
