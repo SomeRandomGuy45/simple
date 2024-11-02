@@ -140,40 +140,44 @@ void VM::Compile()
 			std::string op1 = removeWhitespace(lineData[1], false);
 			std::string op2 = removeWhitespace(lineData[3], false);
 
+			try {
+				std::string op3 = op1.substr(0,op1.find("("));
+				std::vector<std::string> args1; // Vector to store arguments
+				std::stringstream ss(op1.substr(op1.find("(") + 1, op1.find(")") - 2));
+				std::string arg_1;
+				while (std::getline(ss, arg_1, ',')) {
+					// Trim whitespace around the argument
+					arg_1.erase(0, arg_1.find_first_not_of(" \t\n"));
+					arg_1.erase(arg_1.find_last_not_of(" \t\n") + 1);
+					if (!arg.empty()) {
+						args1.push_back(arg_1); // Add non-empty argument to the vector
+					}
+				}
+				std::string op4 = op2.substr(0,op2.find("("));
+				std::vector<std::string> args2; // Vector to store arguments
+				std::stringstream ss_2(op1.substr(op2.find("(") + 1, op2.find(")") - 2));
+				std::string arg;
+				while (std::getline(ss_2, arg, ',')) {
+					// Trim whitespace around the argument
+					arg.erase(0, arg.find_first_not_of(" \t\n"));
+					arg.erase(arg.find_last_not_of(" \t\n") + 1);
+					if (!arg.empty()) {
+						args2.push_back(arg); // Add non-empty argument to the vector
+					}
+				}
+				if (args1.size() > 1) {
+					op1 = RunFuncWithArgs(args1, op3);
+				}
+				if (args2.size() > 1) {
+					op2 = RunFuncWithArgs(args2, op4);
+				}
+			} catch (...) {
+				// Handle some stuff idk
+			}
+
 			// Replace with actual variable values if they exist
 			op1 = var_names.count(op1) ? var_names[op1] : op1;
 			op2 = var_names.count(op2) ? var_names[op2] : op2;
-
-			std::string op3 = op1.substr(0,op1.find("("));
-			std::vector<std::string> args1; // Vector to store arguments
-			std::stringstream ss(op1.substr(op1.find("(") + 1, op1.find(")") - 2));
-			std::string arg_1;
-			while (std::getline(ss, arg_1, ',')) {
-				// Trim whitespace around the argument
-				arg_1.erase(0, arg_1.find_first_not_of(" \t\n"));
-				arg_1.erase(arg_1.find_last_not_of(" \t\n") + 1);
-				if (!arg.empty()) {
-					args1.push_back(arg_1); // Add non-empty argument to the vector
-				}
-			}
-			std::string op4 = op2.substr(0,op2.find("("));
-			std::vector<std::string> args2; // Vector to store arguments
-			std::stringstream ss_2(op1.substr(op2.find("(") + 1, op2.find(")") - 2));
-			std::string arg;
-			while (std::getline(ss_2, arg, ',')) {
-				// Trim whitespace around the argument
-				arg.erase(0, arg.find_first_not_of(" \t\n"));
-				arg.erase(arg.find_last_not_of(" \t\n") + 1);
-				if (!arg.empty()) {
-					args2.push_back(arg); // Add non-empty argument to the vector
-				}
-			}
-			if (args1.size() > 1) {
-				op1 = RunFuncWithArgs(args1, op3);
-			}
-			if (args2.size() > 1) {
-				op2 = RunFuncWithArgs(args2, op4);
-			}
 
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
