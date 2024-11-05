@@ -1,5 +1,17 @@
 #include "vm.h"
 
+std::vector<std::string> split(const std::string& str, char delimiter) {
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string token;
+
+    while (std::getline(ss, token, delimiter)) {
+        result.push_back(token);
+    }
+
+    return result;
+}
+
 Node VM::parse(std::string input)
 {
     Node root;
@@ -34,6 +46,16 @@ extern "C" {
 VM::VM(std::string src)
 {
 	filePath = src;
+}
+
+void VM::RunScriptFunction(std::string func_name, std::vector<std::string> args)
+{
+	if (functions.count(func_name) == 0 && functions_args.count(func_name) == 0) {return;}
+	std::vector<std::string> funcargs = split(functions_args[func_name], ',');
+	for (const auto& arg : funcargs)
+	{
+		std::cout << arg << "\n";
+	}
 }
 
 void VM::changeFilePath(std::string src)
@@ -92,18 +114,30 @@ std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineD
 	return returnVal;
 }
 //This is the implementation of how we can run the code from the bytecode!
-void VM::Compile()
+void VM::Compile(std::string customData)
 {
-	std::ifstream file(filePath);
 	bool stuckInComment = false;
 	bool skipStatment = false;
-	if (!file.is_open())
+	if (customData == "")
 	{
-		throw std::runtime_error("Error couldn't open compiled file with path: " + filePath);
+		std::ifstream file(filePath);
+		if (!file.is_open())
+		{
+			throw std::runtime_error("Error couldn't open compiled file with path: " + filePath);
+		}
+		while (std::getline(file, currentLine))
+		{
+			scriptLines.push_back(currentLine);
+		}
+		file.close();
 	}
-	while (std::getline(file, currentLine))
+	else
 	{
-		scriptLines.push_back(currentLine);
+		std::stringstream ss(customData);
+		while (std::getline(ss, currentLine))
+		{
+			scriptLines.push_back(currentLine);
+		}
 	}
 	for (const std::string& line : scriptLines) {
 		std::stringstream ss(line);
@@ -258,6 +292,33 @@ void VM::Compile()
 		else if (lineData[0] == "RUNANDDEFVAR")
 		{
 			std::vector<std::string> args;
+			if (functions.count(lineData[1]) != 0)
+			{
+				std::vector<std::string> args;
+				if (lineData.size() > 0)
+				{
+					for (size_t i = 2; i < lineData.size(); i++)
+					{
+						if (((lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
+						{
+							continue;
+						}
+						std::string backUpVar = lineData[i];
+						lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+						if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+							for (const auto& var : var_names)
+							{
+								if (var.first == lineData[i]) {
+                                    args.push_back(var.second);  // Use the stored value if found
+                                }
+							}
+						} else {
+							args.push_back(backUpVar);  // Use the original string if not found
+						}
+					}
+				}
+				RunScriptFunction(lineData[2], args);
+			}
 			for (const auto& [func_Name, func] : funcNames)
 			{
 				if (func_Name == lineData[2])
@@ -337,6 +398,33 @@ void VM::Compile()
 		else if (lineData[0] == "RUNFUNC")
 		{
 			std::vector<std::string> args;
+			if (functions.count(lineData[1]) != 0)
+			{
+				std::vector<std::string> args;
+				if (lineData.size() > 0)
+				{
+					for (size_t i = 1; i < lineData.size(); i++)
+					{
+						if (lineData[i] == "EOF")
+						{
+							continue;
+						}
+						std::string backUpVar = lineData[i];
+						lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+						if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+							for (const auto& var : var_names)
+							{
+								if (var.first == lineData[i]) {
+                                    args.push_back(var.second);  // Use the stored value if found
+                                }
+							}
+						} else {
+							args.push_back(backUpVar);  // Use the original string if not found
+						}
+					}
+				}
+				RunScriptFunction(lineData[1], args);
+			}
 			for (const auto& [func_Name, func] : funcNames)
 			{
 				if (func_Name == lineData[1])
@@ -406,7 +494,16 @@ void VM::Compile()
 			}
 		}
 	}
-	file.close(); 
+}
+
+void VM::AddVariable(std::string name, std::string value)
+{
+	var_names[name] = value;
+}
+
+void VM::RemoveVariable(std::string name)
+{
+	var_names.erase(name);
 }
 
 #ifdef __cplusplus

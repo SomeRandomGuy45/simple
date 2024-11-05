@@ -222,6 +222,9 @@ void Token::processFunctionCall(const std::smatch& match) {
     std::string funcName = match[1];
     std::string argsStr = match[2];
     std::string line = "RUNFUNC," + funcName + "," + argsStr + ",EOF";
+    if (argsStr.empty()) {
+        line = "RUNFUNC," + funcName + ",EOF";
+    }
     currentBytecodeFile << line << std::endl;
 }
 
@@ -231,6 +234,10 @@ void Token::handleFunctionDefinition(const std::string& line, bool& trapInFuncti
         std::string funcName = match[1];
         std::string argsStr = match[2];
         std::string add = "BEGINFUN," + funcName + "," + argsStr + ",EOF";
+        if (argsStr.empty())
+        {
+            add = "BEGINFUN," + funcName + ",EOF";
+        }
         currentBytecodeFile << add << std::endl;
         trapInFunction = true;
     }

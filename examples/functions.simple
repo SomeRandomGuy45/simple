@@ -6,4 +6,4 @@ func! argFunc(arg1)
     print(arg1)
 end!
 
-myFunc()
+argFunc("h")

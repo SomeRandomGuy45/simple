@@ -16,8 +16,11 @@ public:
 	VM() = default;
 	VM(std::string src);
 	Node parse(std::string input);
+	void RunScriptFunction(std::string func_name, std::vector<std::string> args);
 	void changeFilePath(std::string src);
-	void Compile();
+	void Compile(std::string customData = "");
+	void AddVariable(std::string name, std::string value);
+	void RemoveVariable(std::string name);
 	std::string RunFuncWithArgs(std::vector<std::string> args, std::string lineData);
 private:
 	std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> funcNames = returnAllFuncName();
