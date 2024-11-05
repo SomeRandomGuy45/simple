@@ -52,10 +52,32 @@ void VM::RunScriptFunction(std::string func_name, std::vector<std::string> args)
 {
 	if (functions.count(func_name) == 0 && functions_args.count(func_name) == 0) {return;}
 	std::vector<std::string> funcargs = split(functions_args[func_name], ',');
-	for (const auto& arg : funcargs)
+	if (funcargs.size() != args.size())
 	{
-		std::cout << arg << "\n";
+		std::cout << "[WARN] Arg size is over " << funcargs.size() << ". Some args will be dropped\n";
 	}
+	for (auto& [key, data] : functions) {
+    	if (key != func_name) {
+            continue;
+        }
+        size_t pos;
+        while ((pos = data.find("DOFUNCCALL,")) != std::string::npos) {
+			data.erase(pos, std::string("DOFUNCCALL,").length());
+        }
+    }
+	VM* vm = new VM();
+	for (size_t i = 0; i < funcargs.size(); ++i) {
+		if (i < args.size())
+		{
+			if (args[i] == func_name)
+			{
+				continue;
+			}
+			vm->AddVariable(funcargs[i], args[i]);
+		}
+	}
+	vm->Compile(functions[func_name]);
+	delete vm;
 }
 
 void VM::changeFilePath(std::string src)
@@ -118,6 +140,7 @@ void VM::Compile(std::string customData)
 {
 	bool stuckInComment = false;
 	bool skipStatment = false;
+	std::string currentFunc = "";
 	if (customData == "")
 	{
 		std::ifstream file(filePath);
@@ -237,16 +260,25 @@ void VM::Compile(std::string customData)
 		{
 			functions[lineData[1]] = "";
 			functions_args[lineData[1]] = lineData[2];
+			currentFunc = lineData[1];
 		}
 		else if (lineData[0] == "DOFUNCCALL")
 		{
-			std::string stuffAdd;
-			for (size_t i = 1; i < lineData.size(); i++)
+			if (lineData[1] == "END")
 			{
+				currentFunc = "";
+				continue;
+			}
+			std::string stuffAdd;
+			for (size_t i = 0; i < lineData.size(); i++)
+			{
+				if (functions[lineData[i]] == "DOFUNCCALL")
+				{
+					continue;
+				}
 				stuffAdd += lineData[i] + ((lineData[i] == "EOF" || lineData[i] == "END") ? " " : ",");
 			}
-			functions[lineData[1]] = stuffAdd + "\n";
-			std::cout << functions[lineData[1]];
+			functions[currentFunc] = stuffAdd + "\n";
 		}
 		else if (lineData[0] == "DEFTOP")
 		{
@@ -403,7 +435,7 @@ void VM::Compile(std::string customData)
 				std::vector<std::string> args;
 				if (lineData.size() > 0)
 				{
-					for (size_t i = 1; i < lineData.size(); i++)
+					for (size_t i = 2; i < lineData.size(); i++)
 					{
 						if (lineData[i] == "EOF")
 						{
