@@ -6,6 +6,10 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     std::string token;
 
     while (std::getline(ss, token, delimiter)) {
+		if (token == "EOF")
+		{
+			continue;
+		}
         result.push_back(token);
     }
 
@@ -54,7 +58,7 @@ void VM::RunScriptFunction(std::string func_name, std::vector<std::string> args)
 	std::vector<std::string> funcargs = split(functions_args[func_name], ',');
 	if (funcargs.size() != args.size())
 	{
-		std::cout << "[WARN] Arg size is over " << funcargs.size() << ". Some args will be dropped\n";
+		std::cout << "[WARN] Arg size is not same size as " << funcargs.size() << ". Some args will be dropped\n";
 	}
 	for (auto& [key, data] : functions) {
     	if (key != func_name) {

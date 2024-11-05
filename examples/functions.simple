@@ -1,5 +1,7 @@
 func! myFunc()
-    print("hi")
+    if "hi" ~= "hello world!" then
+        print("hi doesn't equal to hello world!")
+    end
 end!
 
 func! argFunc(arg1)
