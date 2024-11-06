@@ -307,11 +307,19 @@ void VM::Compile(std::string customData)
 			}
 			else if (lineData[1] == "MIN_VERSION")
 			{
-				if (SIMPLE_FULL_VERSION != lineData[2])
+				if (SIMPLE_FULL_VERSION < lineData[2])
 				{
 					std::cerr << "Error: Requested minimum version (" << lineData[2] << ") is not equal to the current version (" << SIMPLE_FULL_VERSION << ")" << std::endl;
                     return;
 				}
+			}
+			else if (lineData[1] == "MAX_VERSION")
+			{
+				if (SIMPLE_FULL_VERSION > lineData[2])
+                {
+                    std::cerr << "Error: Requested maximum version (" << lineData[2] << ") is not equal to the current version (" << SIMPLE_FULL_VERSION << ")" << std::endl;
+                    return;
+                }
 			}
 			//add more later on
 		} 
