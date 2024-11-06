@@ -7,5 +7,6 @@
 
 !define MIN_RAM 256
 !define MIN_VERSION v1.0.0
+!define MAX_VERSION v1.0.1
 
 print("Should work!")
