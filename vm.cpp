@@ -177,8 +177,7 @@ void VM::Compile(std::string customData)
 
 			if (arg.size() > 1 && 
 				((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''))) {
-				// Remove the outermost quotes if they are the same
-				arg = arg.substr(1, arg.size() - 2); // Remove outer quotes
+				arg = arg.substr(1, arg.size() - 2); // Strip outer quotes
 			}
 			lineData.push_back(arg); 
 		}
@@ -195,6 +194,11 @@ void VM::Compile(std::string customData)
 		}
 		if (stuckInComment)
 		{
+			continue;
+		}
+		if (lineData[1] == "END" && lineData[0] == "DOFUNCCALL")
+		{
+			currentFunc = "";
 			continue;
 		}
 		if (lineData[0] == "IFOP") {
@@ -268,11 +272,6 @@ void VM::Compile(std::string customData)
 		}
 		else if (lineData[0] == "DOFUNCCALL")
 		{
-			if (lineData[1] == "END")
-			{
-				currentFunc = "";
-				continue;
-			}
 			std::string stuffAdd;
 			for (size_t i = 0; i < lineData.size(); i++)
 			{
@@ -282,7 +281,7 @@ void VM::Compile(std::string customData)
 				}
 				stuffAdd += lineData[i] + ((lineData[i] == "EOF" || lineData[i] == "END") ? " " : ",");
 			}
-			functions[currentFunc] = stuffAdd + "\n";
+			functions[currentFunc] += stuffAdd + "\n";
 		}
 		else if (lineData[0] == "DEFTOP")
 		{
@@ -340,7 +339,9 @@ void VM::Compile(std::string customData)
 							continue;
 						}
 						std::string backUpVar = lineData[i];
-						lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+						if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+							lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+						}
 						if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
 							for (const auto& var : var_names)
 							{
@@ -368,7 +369,9 @@ void VM::Compile(std::string customData)
 								continue;
 							}
 							std::string backUpVar = lineData[i];
-							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+							if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+								lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+							}
 							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
 								for (const auto& var : var_names)
 								{
@@ -404,7 +407,9 @@ void VM::Compile(std::string customData)
 								continue;
 							}
 							std::string backUpVar = lineData[i];
-							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+							if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+								lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+							}
 							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
 								for (const auto& var : var_names)
 								{
@@ -446,7 +451,9 @@ void VM::Compile(std::string customData)
 							continue;
 						}
 						std::string backUpVar = lineData[i];
-						lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+						if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+							lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+						}
 						if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
 							for (const auto& var : var_names)
 							{
@@ -474,7 +481,9 @@ void VM::Compile(std::string customData)
 								continue;
 							}
 							std::string backUpVar = lineData[i];
-							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+							if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+								lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+							}
 
 							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
 								for (const auto& var : var_names)
@@ -508,7 +517,9 @@ void VM::Compile(std::string customData)
 								continue;
 							}
 							std::string backUpVar = lineData[i];
-							lineData[i].erase(std::remove(lineData[i].begin(), lineData[i].end(), '\"'), lineData[i].end());
+							if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+								lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+							}
 
 							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
 								for (const auto& var : var_names)
