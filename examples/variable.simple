@@ -1,13 +1,13 @@
 !define MIN_RAM 256
 !define MIN_VERSION v1.0.0
 
-local testPrint="varName"
+global testPrint="varName"
 print(testPrint)
 testPrint="hi"
 print(testPrint)
-local now_this_works = "local hi" 
+global now_this_works = "local hi" 
 print(now_this_works)
-local func_test = print("TESTING THE IF STATMENT!")
+global func_test = print("TESTING THE IF STATMENT!")
 if func_test == "" then
     print("func_test IS blank lol")
 else
