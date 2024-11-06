@@ -4,10 +4,10 @@ func! myFunc()
     end
 end!
 
-func! argFunc(arg1)
-    print(arg1)
+func! argFunc(arg1, arg2)
+    print(arg1, arg2)
 end!
 
-argFunc("h")
-argFunc("bye!")
+argFunc("h", "cool")
+argFunc("bye!", "cool")
 myFunc()

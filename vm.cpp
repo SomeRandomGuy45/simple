@@ -56,10 +56,6 @@ void VM::RunScriptFunction(std::string func_name, std::vector<std::string> args)
 {
 	if (functions.count(func_name) == 0 && functions_args.count(func_name) == 0) {return;}
 	std::vector<std::string> funcargs = split(functions_args[func_name], ',');
-	if (funcargs.size() != args.size())
-	{
-		std::cout << "[WARN] Arg size is not same size as " << funcargs.size() << ". Some args will be dropped\n";
-	}
 	for (auto& [key, data] : functions) {
     	if (key != func_name) {
             continue;
