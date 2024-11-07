@@ -405,6 +405,7 @@ settings.json
 /x64
 simple/x64/
 simple/build/*
+simple/single_include/*
 /.vs
 *.dll
 *.dylib
