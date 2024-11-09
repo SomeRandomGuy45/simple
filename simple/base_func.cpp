@@ -25,6 +25,54 @@ ReturnType print(std::vector<std::string> args)
     return nullptr;
 }
 
+ReturnType add(std::vector<std::string> args)
+{
+    size_t finalNum = 0;
+    for (const auto& val : args)
+    {
+        try {
+            finalNum += std::stoull(val);
+        } catch (...) {};
+    }
+    return std::to_string(finalNum);
+}
+
+ReturnType sub(std::vector<std::string> args)
+{
+    size_t finalNum = 0;
+    for (const auto& val : args)
+    {
+        try {
+            finalNum -= std::stoull(val);
+        } catch (...) {};
+    }
+    return std::to_string(finalNum);
+}
+
+ReturnType multi(std::vector<std::string> args)
+{
+    size_t finalNum = 1;
+    for (const auto& val : args)
+    {
+        try {
+            finalNum *= std::stoull(val);
+        } catch (...) {};
+    }
+    return std::to_string(finalNum);
+}
+
+ReturnType div(std::vector<std::string> args)
+{
+    size_t finalNum = 1;
+    for (const auto& val : args)
+    {
+        try {
+            finalNum /= std::stoull(val);
+        } catch (...) {};
+    }
+    return std::to_string(finalNum);
+}
+
 ReturnType writeData(std::vector<std::string> args)
 {
     if (args.size() != 2)
@@ -167,8 +215,12 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"system", [](std::vector<std::string> args) -> ReturnType { return runSysCmd(args); }},
         {"sin", [](std::vector<std::string> args) -> ReturnType { return sinFunc(args); }},
         {"allocMemory", [](std::vector<std::string> args) -> ReturnType { return allocMemory(args); }},
-        {"freeMemory", [](std::vector<std::string> args) -> ReturnType { return freeMemory(args); }}
-	};
+        {"freeMemory", [](std::vector<std::string> args) -> ReturnType { return freeMemory(args); }},
+        {"add", [](std::vector<std::string> args) -> ReturnType { return add(args); }},
+        {"sub", [](std::vector<std::string> args) -> ReturnType { return sub(args); }},
+        {"div", [](std::vector<std::string> args) -> ReturnType { return div(args); }},
+        {"multi", [](std::vector<std::string> args) -> ReturnType { return multi(args); }}
+    };
 }
 
 static void* loadLibraryImpl(const std::string& libName) {
