@@ -49,7 +49,6 @@ jobs:
       id: strings
       shell: bash
       run: |
-        cd ${{ github.workspace }}/simple
         echo "build-output-dir=${{ github.workspace }}/simple/build" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake (Linux/macOS)
@@ -65,19 +64,25 @@ jobs:
     - name: Configure CMake (Windows with g++)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -G "MinGW Makefiles" -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ${{ github.workspace }}/simple
+        cmake -G "MinGW Makefiles" -B ${{ steps.strings.outputs.build-output-dir }} \
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+        -S ${{ github.workspace }}/simple
       env:
         CXX: ${{ matrix.cpp_compiler }}
-      
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
     - name: Check and Move libsimple_main.dll (Windows)
       if: matrix.os == 'windows-latest'
+      shell: pwsh
       run: |
-        if (Test-Path "${{ steps.strings.outputs.build-output-dir }}\libsimple_main.dll") {
-            Move-Item -Path "${{ steps.strings.outputs.build-output-dir }}\libsimple_main.dll" -Destination "${{ steps.strings.outputs.build-output-dir }}\dist\"
+        $dllPath = "${{ steps.strings.outputs.build-output-dir }}\libsimple_main.dll"
+        $destDir = "${{ steps.strings.outputs.build-output-dir }}\dist\"
+        if (Test-Path $dllPath) {
+            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+            Move-Item -Path $dllPath -Destination $destDir
         } else {
             Write-Host "libsimple_main.dll does not exist."
         }
@@ -86,6 +91,7 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         if [ -f "${{ steps.strings.outputs.build-output-dir }}/libsimple_main.dll" ]; then
+            mkdir -p "${{ steps.strings.outputs.build-output-dir }}/dist/"
             mv "${{ steps.strings.outputs.build-output-dir }}/libsimple_main.dll" "${{ steps.strings.outputs.build-output-dir }}/dist/"
         else
             echo "libsimple_main.dll does not exist."
@@ -97,4 +103,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: build-artifacts-${{ matrix.os }}
-        path: ${{ steps.strings.outputs.build-output-dir }}/dist  
+        path: ${{ steps.strings.outputs.build-output-dir }}/dist
