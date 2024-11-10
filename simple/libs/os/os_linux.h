@@ -1,3 +1,5 @@
+#ifndef OS_HEADER_MAIN
+#define OS_HEADER_MAIN
 #ifdef __linux__
 
 #if defined(__has_include)
@@ -5,9 +7,10 @@
         #include <X11/Xlib.h>
     #endif
 #else
-    #error "Couldn't find X11/Xlib.h! Please install X11!"
+    #warning "Couldn't find X11/Xlib.h! UI drawing function will be disabled! (To fix this install X11)"
 #endif
 
 #include <unistd.h>
 
+#endif
 #endif

@@ -8,12 +8,13 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include "libs/libs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-using ReturnType = std::variant<std::nullptr_t, std::string>;
+
 
 typedef std::string(*FunctionPtr)(const std::vector<std::string>& args);
 
