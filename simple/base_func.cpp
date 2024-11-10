@@ -61,7 +61,7 @@ ReturnType multi(std::vector<std::string> args)
     return std::to_string(finalNum);
 }
 
-ReturnType div(std::vector<std::string> args)
+ReturnType divi(std::vector<std::string> args)
 {
     size_t finalNum = 1;
     for (const auto& val : args)
@@ -218,7 +218,7 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"freeMemory", [](std::vector<std::string> args) -> ReturnType { return freeMemory(args); }},
         {"add", [](std::vector<std::string> args) -> ReturnType { return add(args); }},
         {"sub", [](std::vector<std::string> args) -> ReturnType { return sub(args); }},
-        {"div", [](std::vector<std::string> args) -> ReturnType { return div(args); }},
+        {"div", [](std::vector<std::string> args) -> ReturnType { return divi(args); }},
         {"multi", [](std::vector<std::string> args) -> ReturnType { return multi(args); }}
     };
 }
