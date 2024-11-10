@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-
+using ReturnType = std::variant<std::nullptr_t, std::string>;
 
 typedef std::string(*FunctionPtr)(const std::vector<std::string>& args);
 
