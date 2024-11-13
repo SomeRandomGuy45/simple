@@ -232,7 +232,7 @@ void Token::handleFunctionDefinition(const std::string& line, bool& trapInFuncti
     std::smatch match;
     if (std::regex_match(line, match, std::regex(R"(func!\s+([a-zA-Z_]\w*)\s*\(([^)]*)\))"))) {
         std::string funcName = match[1];
-        std::string argsStr = match[2];
+        std::string argsStr = match[2];;
         std::string add = "BEGINFUN," + funcName + "," + argsStr + ",EOF";
         if (argsStr.empty())
         {

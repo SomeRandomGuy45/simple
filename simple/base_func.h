@@ -22,6 +22,8 @@ extern std::unordered_map<std::string, FunctionPtr> outerFunctions;
 
 extern std::unordered_map<std::string, void*> loadedLibraries;
 
+extern std::vector<std::string> exportedFunctions;
+
 extern std::vector<void*> allocatedBlocks;
 
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName();

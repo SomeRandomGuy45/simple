@@ -1,3 +1,17 @@
+/*
+* Some examples of functions
+*/
+
+/*
+* Comes with a example of the export function
+* In a future update you will be able to do this to say to the complier "Hey I'm a module!"
+*/
+
+// define! MODULE_EXPORT true
+
+!define MIN_RAM 256
+!define MIN_VERSION v1.0.0
+
 func! myFunc()
     if "hi" ~= "hello world!" then
         print("hi doesn't equ!al to hello world!")
@@ -8,6 +22,18 @@ func! argFunc(arg1, arg2)
     print(arg1, arg2)
 end!
 
+/*
+* How the function gets called
+*/
+
 argFunc("h", "cool")
 argFunc("bye!", "cool")
 myFunc()
+
+/*
+* This function is not completed yet
+* But it lets you export functions which can be used in other simple scripts
+* This is just a simple example of how it works
+*/
+
+export(myFunc, argFunc) // example here

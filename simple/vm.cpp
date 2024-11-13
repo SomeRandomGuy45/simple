@@ -262,8 +262,15 @@ void VM::Compile(std::string customData)
 		}
 		else if (lineData[0] == "BEGINFUN")
 		{
-			functions[lineData[1]] = "";
-			functions_args[lineData[1]] = lineData[2];
+			functions[lineData[1]] = "";;
+			for (size_t i = 2; i < lineData.size(); ++i)
+			{
+				functions_args[lineData[1]] += lineData[i];
+				if (lineData[i] != "EOF")
+				{
+					functions_args[lineData[1]] += ",";
+				}
+			}
 			currentFunc = lineData[1];
 		}
 		else if (lineData[0] == "DOFUNCCALL")

@@ -205,6 +205,16 @@ ReturnType freeMemory(std::vector<std::string> args)
     return nullptr;
 }
 
+ReturnType exportFuncs(std::vector<std::string> args) {
+    if (args.size() < 1)
+    {
+        std::cout << "[EXPORT] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    std::cout << "[EXPORT] Hey! This function is still WIP!\n[EXPORT] Once the function/feature is finshed please include !define MODULE_EXPORT true\n[EXPORT] Thank you!\n";
+    return nullptr;
+}
+
 //The holder of all the functions
 //This looks trash and I really need to find a different way lol
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
@@ -219,7 +229,8 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"add", [](std::vector<std::string> args) -> ReturnType { return add(args); }},
         {"sub", [](std::vector<std::string> args) -> ReturnType { return sub(args); }},
         {"div", [](std::vector<std::string> args) -> ReturnType { return divi(args); }},
-        {"multi", [](std::vector<std::string> args) -> ReturnType { return multi(args); }}
+        {"multi", [](std::vector<std::string> args) -> ReturnType { return multi(args); }},
+        {"export", [](std::vector<std::string> args) -> ReturnType {return exportFuncs(args); }},
     };
 }
 
