@@ -507,10 +507,7 @@ void VM::Compile(std::string customData)
 								args.push_back(backUpVar);  // Use the original string if not found
 							}
 						}
-						ReturnType result = func(args);
-						if (std::holds_alternative<std::string>(result)) {
-							//TODO allow return vals
-						}
+						func(args);
 					}
 				}
 			}
@@ -544,10 +541,7 @@ void VM::Compile(std::string customData)
 							}
 						}
 					}
-					ReturnType result = func(args);
-					if (std::holds_alternative<std::string>(result)) {
-						//TODO allow return vals
-					}
+					func(args);
 				}
 			}
 		}

@@ -9,7 +9,6 @@
 
 // TODO
 
-ReturnType create_window(std::vector<std::string> args);
 
 #endif
 #endif

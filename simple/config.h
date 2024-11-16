@@ -18,16 +18,6 @@ extern "C" {
 #endif
 #endif
 
-#ifdef __cplusplus
-    #if __cplusplus >= 201103L
-    #define nullptr nullptr
-    #else
-    #define nullptr NULL
-    #endif
-#else
-    #define nullptr NULL
-#endif
-
 #define SIMPLE_MAJOR_VERSION 1
 #define SIMPLE_MINOR_VERSION 0
 #define SIMPLE_BUGFIX_VERSION 0
