@@ -218,19 +218,19 @@ ReturnType exportFuncs(std::vector<std::string> args) {
 //The holder of all the functions
 //This looks trash and I really need to find a different way lol
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
-	return std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> {
-		{"print", [](std::vector<std::string> args) -> ReturnType { return print(args); }},
-        {"writeToFile", [](std::vector<std::string> args) -> ReturnType { return writeData(args); }},
-        {"readFile", [](std::vector<std::string> args) -> ReturnType { return readData(args); }},
-        {"system", [](std::vector<std::string> args) -> ReturnType { return runSysCmd(args); }},
-        {"sin", [](std::vector<std::string> args) -> ReturnType { return sinFunc(args); }},
-        {"allocMemory", [](std::vector<std::string> args) -> ReturnType { return allocMemory(args); }},
-        {"freeMemory", [](std::vector<std::string> args) -> ReturnType { return freeMemory(args); }},
-        {"add", [](std::vector<std::string> args) -> ReturnType { return add(args); }},
-        {"sub", [](std::vector<std::string> args) -> ReturnType { return sub(args); }},
-        {"div", [](std::vector<std::string> args) -> ReturnType { return divi(args); }},
-        {"multi", [](std::vector<std::string> args) -> ReturnType { return multi(args); }},
-        {"export", [](std::vector<std::string> args) -> ReturnType {return exportFuncs(args); }},
+    return {
+        {"print", print},
+        {"writeToFile", writeData},
+        {"readFile", readData},
+        {"system", runSysCmd},
+        {"sin", sinFunc},
+        {"allocMemory", allocMemory},
+        {"freeMemory", freeMemory},
+        {"add", add},
+        {"sub", sub},
+        {"div", divi},
+        {"multi", multi},
+        {"export", exportFuncs},
     };
 }
 
