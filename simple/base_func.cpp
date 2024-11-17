@@ -16,27 +16,32 @@ std::unordered_map<std::string, FunctionPtr> outerFunctions{};
 std::unordered_map<std::string, void*> loadedLibraries{};
 std::vector<void*> allocatedBlocks;
 
-std::string replaceAll(std::string str, const std::string& from, const std::string& to) {
-    size_t start_pos = 0;
-    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
-    }
-    return str;
-}
-
 ReturnType print(std::vector<std::string> args)
 {
-	for (const auto& arg : args) {
-        std::string modified = replaceAll(arg, "\\n", "\n"); // Replace literal \n with actual newline
-        std::istringstream stream(modified);
-        std::string line;
-
-        // Print each part of the string, split by actual newline
-        while (std::getline(stream, line)) {
-            std::cout << line << "\n";
+	for (auto& val : args)
+	{
+        bool shouldNewLine = false;
+        if ((val.find("\\n") != std::string::npos))
+        {
+            size_t start_pos = 0;
+            while ((start_pos = val.find("\\n", start_pos)) != std::string::npos) {
+                val.replace(start_pos, std::string("\\n").length(), "\n");
+                start_pos += 1;
+            }
+            shouldNewLine = true;
         }
-    }
+        else if (val == "\\n")
+        {
+            val = "";
+            shouldNewLine = true;
+        }
+        std::cout << val << " ";
+        if (shouldNewLine)
+        {
+            std::cout << "\n";
+        }
+	}
+	std::cout << "\n";
     return nullptr;
 }
 
