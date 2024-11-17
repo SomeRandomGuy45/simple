@@ -165,25 +165,25 @@ void Token::processScriptLines() {
 void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunction) {
     std::smatch match;
     // Function call
-    if (std::regex_match(line, match, std::regex(R"(\s*(\w+(?:\.\w+)?)\s*\((.*?)\))"))) {
+    if (std::regex_match(line, match, std::regex(R"(\s*(\w+(?:\.\w+)?)\s*->\s*\((.*?)\))"))) {
         processFunctionCall(match);
     }
     // If statement
-    else if (std::regex_match(line, match, std::regex(R"(if\s+(.+?)\s*(==|~=|>=|>|<=|<)\s*(.+?)\s*then)"))) {
+    else if (std::regex_match(line, match, std::regex(R"(if\s+(.+?)\s*(==|~=|>=|!>|<=|<!)\s*(.+?)\s*then)"))) {
         currentBytecodeFile << "IFOP," << std::string(match[1]) << "," << std::string(match[2]) << "," << std::string(match[3]) << std::endl;
     }
     // Else If statement
-    else if (std::regex_match(line, match, std::regex(R"(elseif\s+(.+?)\s*(==|~=|>=|>|<=|<)\s*(.+?)\s*then)"))) {
+    else if (std::regex_match(line, match, std::regex(R"(elseif\s+(.+?)\s*(==|~=|>=|!>|<=|<!)\s*(.+?)\s*then)"))) {
         currentBytecodeFile << "ELSEIFOP," << std::string(match[1]) << "," << std::string(match[2]) << "," << std::string(match[3]) << std::endl;
     }
     else if (line.substr(0,4) == "else") {
         currentBytecodeFile << "ELSE" << std::endl;
     }
     // Global variable assignment
-    else if (std::regex_match(line, match, std::regex(R"(global\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^()]*)\))"))) {
+    else if (std::regex_match(line, match, std::regex(R"(global\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*\(([^()]*)\))"))) {
         currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
     }
-    else if (std::regex_match(line, match, std::regex(R"(([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(([^()]*)\))"))) {
+    else if (std::regex_match(line, match, std::regex(R"(([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*\(([^()]*)\))"))) {
         currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
     }
     // Other cases...

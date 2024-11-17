@@ -14,21 +14,21 @@
 
 func! myFunc()
     if "hi" ~= "hello world!" then
-        print("hi doesn't equ!al to hello world!")
+        print->("hi doesn't equ!al to hello world!")
     end
 end!
 
 func! argFunc(arg1, arg2)
-    print(arg1, arg2)
+    print->(arg1, arg2)
 end!
 
 /*
 * How the function gets called
 */
 
-argFunc("h", "cool")
-argFunc("bye!", "cool")
-myFunc()
+argFunc->("h", "cool")
+argFunc->("bye!", "cool")
+myFunc->()
 
 /*
 * This function is not completed yet
@@ -36,4 +36,4 @@ myFunc()
 * This is just a simple example of how it works
 */
 
-export(myFunc, argFunc) // example here
+export->(myFunc, argFunc) // example here

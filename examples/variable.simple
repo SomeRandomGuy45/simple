@@ -2,14 +2,16 @@
 !define MIN_VERSION v1.0.0
 
 global testPrint="varName"
-print(testPrint)
+print->(testPrint)
 testPrint="hi"
-print(testPrint)
+print->(testPrint)
 global now_this_works = "local hi" 
-print(now_this_works)
-global func_test = print("TESTING THE IF STATMENT!")
-if func_test == "" then
-    print("func_test IS blank lol")
-else
-    print("func_test is not blank lol")
+print->(now_this_works)
+global func_test = print->("TESTING THE IF STATMENT!")
+if func_test == print->("hi") then
+    print->("func_test IS blank lol")
+end
+
+if print->("hi") == print->("bye") then
+    print->("print IS blank lol")
 end

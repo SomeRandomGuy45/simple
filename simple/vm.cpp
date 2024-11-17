@@ -85,7 +85,7 @@ void VM::changeFilePath(std::string src)
 	filePath = src;
 }
 
-std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineData)
+std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineData, bool& isFunc)
 {
 	std::string returnVal;
 	for (std::string& arg : args)
@@ -97,6 +97,7 @@ std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineD
 	{
 		if (func_Name == lineData)
 		{
+			isFunc = true;
 			if (args.size() > 0)
 			{
 				for (size_t i = 1; i < args.size(); i++)
@@ -200,53 +201,59 @@ void VM::Compile(std::string customData)
 		if (lineData[0] == "IFOP") {
 			std::string op1 = removeWhitespace(lineData[1], false);
 			std::string op2 = removeWhitespace(lineData[3], false);
+			bool op1_is_func = false;
+			bool op2_is_func = false;
 
 			try {
-				std::string op3 = op1.substr(0,op1.find("("));
+				std::string op3 = op1.substr(0,op1.find("->("));
 				std::vector<std::string> args1; // Vector to store arguments
-				std::stringstream ss(op1.substr(op1.find("(") + 1, op1.find(")") - 2));
-				std::string arg_1;
-				while (std::getline(ss, arg_1, ',')) {
-					// Trim whitespace around the argument
-					arg_1.erase(0, arg_1.find_first_not_of(" \t\n"));
-					arg_1.erase(arg_1.find_last_not_of(" \t\n") + 1);
-					if (!arg.empty()) {
-						args1.push_back(arg_1); // Add non-empty argument to the vector
+				size_t start = op1.find("->(") + 3; // Skip "->("
+				size_t end = op1.find(")", start); // Find closing parenthesis
+				if (start != std::string::npos && end != std::string::npos) {
+					std::string arg = op1.substr(start, end - start);
+					std::stringstream ss(arg);
+					while (std::getline(ss, arg, ',')) {
+						// Trim whitespace around the argument
+						arg.erase(0, arg.find_first_not_of(" \t\n"));
+						arg.erase(arg.find_last_not_of(" \t\n") + 1);
+						if (!arg.empty()) {
+							args1.push_back(arg); // Add non-empty argument to the vector
+						}
 					}
 				}
-				std::string op4 = op2.substr(0,op2.find("("));
+				std::string op4 = op2.substr(0,op2.find("->("));
 				std::vector<std::string> args2; // Vector to store arguments
-				std::stringstream ss_2(op1.substr(op2.find("(") + 1, op2.find(")") - 2));
-				std::string arg;
-				while (std::getline(ss_2, arg, ',')) {
-					// Trim whitespace around the argument
-					arg.erase(0, arg.find_first_not_of(" \t\n"));
-					arg.erase(arg.find_last_not_of(" \t\n") + 1);
-					if (!arg.empty()) {
-						args2.push_back(arg); // Add non-empty argument to the vector
+				start = op2.find("->(") + 3; // Skip "->("
+				end = op2.find(")", start); // Find closing parenthesis
+				if (start != std::string::npos && end != std::string::npos) {
+					std::string arg = op2.substr(start, end - start);
+					std::stringstream ss_2(arg);
+					while (std::getline(ss_2, arg, ',')) {
+						// Trim whitespace around the argument
+						arg.erase(0, arg.find_first_not_of(" \t\n"));
+						arg.erase(arg.find_last_not_of(" \t\n") + 1);
+						if (!arg.empty()) {
+							args2.push_back(arg); // Add non-empty argument to the vector
+						}
 					}
 				}
-				if (args1.size() > 1) {
-					op1 = RunFuncWithArgs(args1, op3);
-				}
-				if (args2.size() > 1) {
-					op2 = RunFuncWithArgs(args2, op4);
-				}
+				op1 = RunFuncWithArgs(args1, op3, op1_is_func);
+				op2 = RunFuncWithArgs(args2, op4, op2_is_func);
 			} catch (...) {
-				// Handle some stuff idk
-			}
+				// add something here later idc
+			}	
 
-			// Replace with actual variable values if they exist
-			op1 = var_names.count(op1) ? var_names[op1] : op1;
-			op2 = var_names.count(op2) ? var_names[op2] : op2;
+			// Replace with actual variable values if they exist and its not a function
+			op1 = (var_names.count(op1) && op1_is_func == false) ? var_names[op1] : op1;
+			op2 = (var_names.count(op2) && op2_is_func == false)? var_names[op2] : op2;
 
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
 				{"==", std::equal_to<std::string>()},
 				{"~=", std::not_equal_to<std::string>()},
-				{">", std::greater<std::string>()},
+				{"!>", std::greater<std::string>()},
 				{">=", std::greater_equal<std::string>()},
-				{"<", std::less<std::string>()},
+				{"<!", std::less<std::string>()},
 				{"<=", std::less_equal<std::string>()}
 			};
 

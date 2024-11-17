@@ -5,5 +5,5 @@
 add myLib
 
 // This is how you call a imported library
-myLib.add(5, 10)
-myLib.test()
+myLib.add->(5, 10)
+myLib.test->()

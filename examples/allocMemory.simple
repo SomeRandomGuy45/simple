@@ -4,7 +4,7 @@
 // since this allocates memory
 // If you do not do freeMemory then it will cause memory leaks (Possibly and doesn't apply to all OSes)
 // Its okay if you don't use it since it will reclaim the memory used
-global test = allocMemory(1024)
-print(test) // Returns 0 since std::vector starts at 0!
-test = freeMemory(test) // Returns success, if successful when the memory is free
-print(test)
+global test = allocMemory->(1024)
+print->(test) // Returns 0 since std::vector starts at 0!
+test = freeMemory->(test) // Returns success, if successful when the memory is free
+print->(test)
