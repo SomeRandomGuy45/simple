@@ -1,0 +1,9 @@
+/*
+* very simple program that only lets you work it your on macos/APPLE
+*/
+
+if OS ~= "APPLE" then
+    exit->()
+end
+
+print->("hi!")

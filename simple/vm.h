@@ -33,6 +33,7 @@ private:
 		{"true", "true"},
 		{"false", "false"},
         {"NULL", "NULL"},
+		{"OS", OS}
 	};
 	std::unordered_map<std::string, std::string> functions;
 	std::unordered_map<std::string, std::string> functions_args;

@@ -228,6 +228,11 @@ ReturnType exportFuncs(std::vector<std::string> args) {
     return nullptr;
 }
 
+ReturnType exit_program(std::vector<std::string> args) {
+    std::exit(0);
+    return nullptr;
+}
+
 //The holder of all the functions
 //This looks trash and I really need to find a different way lol
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
@@ -244,6 +249,7 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"div", divi},
         {"multi", multi},
         {"export", exportFuncs},
+        {"exit", exit_program},
     };
 }
 

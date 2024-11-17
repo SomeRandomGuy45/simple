@@ -37,13 +37,16 @@
 #define UNLOAD_LIB(lib) FreeLibrary((HMODULE)lib)
 #define GET_FUNC(lib, func) reinterpret_cast<void*>(GetProcAddress((HMODULE)lib, func))
 #define LIBPATH "C:\\Program Files\\simple_libs\\lib"
+#define OS "WIN"
 #else
 #include <dlfcn.h>
 #define LIBPATH "/usr/local/lib/simple_libs/lib"
 #ifdef __APPLE__
 #define LIB_EXT ".dylib"
+#define OS "APPLE"
 #else
 #define LIB_EXT ".so"
+#define OS "OTHER"
 #endif
 #define LOAD_LIB(name) dlopen(name, RTLD_LAZY)
 #define UNLOAD_LIB(lib) dlclose(lib)
