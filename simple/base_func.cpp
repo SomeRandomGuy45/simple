@@ -20,7 +20,6 @@ ReturnType print(std::vector<std::string> args)
 {
 	for (auto& val : args)
 	{
-        bool shouldNewLine = false;
         if ((val.find("\\n") != std::string::npos))
         {
             size_t start_pos = 0;
@@ -28,18 +27,12 @@ ReturnType print(std::vector<std::string> args)
                 val.replace(start_pos, std::string("\\n").length(), "\n");
                 start_pos += 1;
             }
-            shouldNewLine = true;
         }
         else if (val == "\\n")
         {
-            val = "";
-            shouldNewLine = true;
+            val = "\n";
         }
         std::cout << val << " ";
-        if (shouldNewLine)
-        {
-            std::cout << "\n";
-        }
 	}
 	std::cout << "\n";
     return nullptr;
