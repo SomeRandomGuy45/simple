@@ -28,7 +28,12 @@ private:
 	std::string currentLine;
 	std::vector<std::string> scriptLines;
 
-	std::unordered_map<std::string, std::string> var_names;
+	std::unordered_map<std::string, std::string> var_names = {
+		// some default vars
+		{"true", "true"},
+		{"false", "false"},
+        {"NULL", "NULL"},
+	};
 	std::unordered_map<std::string, std::string> functions;
 	std::unordered_map<std::string, std::string> functions_args;
 
