@@ -212,6 +212,8 @@ static bool allArgs(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
+    ARG_INPUT_LENGTH = argc;
+    ARG_INPUT = argv;
     bool shouldKill = allArgs(argc, argv);
     if (shouldKill) {
         return EXIT_SUCCESS;

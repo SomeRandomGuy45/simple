@@ -1,0 +1,20 @@
+/*
+* Writes to a file with given args and given input
+*/
+
+!define MIN_RAM 256
+!define MIN_VERSION v1.0.0
+
+// Gets the 2nd arg
+global InputFile = getArgs->(2)
+
+// Gets the 3rd arg if there is one. If not we would default to 10 lines
+global Lines = getArgs->(3)
+if isNumber->(Lines) == false then
+    Lines = 10
+end
+
+// Gets the input from user to write to file
+global InputData = getInput->(Lines)
+
+writeToFile->(InputFile, InputData)

@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
-std::unordered_map<std::string, FunctionPtr> outerFunctions{};
-std::unordered_map<std::string, void*> loadedLibraries{};
+std::unordered_map<std::string, FunctionPtr> outerFunctions;
+std::unordered_map<std::string, void*> loadedLibraries;
 std::vector<void*> allocatedBlocks;
+char** ARG_INPUT;
+int ARG_INPUT_LENGTH;
 
 ReturnType print(std::vector<std::string> args)
 {
@@ -110,6 +112,26 @@ ReturnType readData(std::vector<std::string> args)
     oss << file.rdbuf();
     file.close();
     return oss.str();
+}
+
+ReturnType isANumber(std::vector<std::string> args)
+{
+    if (args.size() != 1)
+    {
+        std::cout << "[ISNUMBER] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    const std::string& s = args[0];
+    if (!s.empty() && std::find_if(s.begin(), 
+        s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end())
+    {
+        return "true";
+    }
+    else
+    {
+        return "false";
+    }
+    return nullptr;
 }
 
 ReturnType runSysCmd(std::vector<std::string> args)
@@ -233,6 +255,43 @@ ReturnType exit_program(std::vector<std::string> args) {
     return nullptr;
 }
 
+ReturnType get_users_input(std::vector<std::string> args) {
+    size_t count = 0;
+    size_t max_size = 1;
+    if (args.size() == 1)
+    {
+        max_size = std::stoll(args[0]);
+    }
+    std::string input;
+    std::string line;
+    while (true) {
+        if (max_size <= count)
+        {
+            break;
+        }
+        std::getline(std::cin, line);
+
+        // Append the new line to the input string
+        input += line + "\n";  // Add a newline after each input line
+        ++count;
+    }
+    return input;
+}
+
+ReturnType getArgs(std::vector<std::string> args) {
+    if (args.size() != 1)
+    {
+        std::cout << "[GETARGS] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    std::string argStr = args[0];
+    if (ARG_INPUT[std::stoi(argStr)] != nullptr)
+    {
+        return std::string(ARG_INPUT[std::stoi(argStr)]);
+    }
+    return nullptr;
+}
+
 //The holder of all the functions
 //This looks trash and I really need to find a different way lol
 std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> returnAllFuncName() {
@@ -250,6 +309,9 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"multi", multi},
         {"export", exportFuncs},
         {"exit", exit_program},
+        {"getInput", get_users_input},
+        {"getArgs", getArgs},
+        {"isNumber", isANumber},
     };
 }
 

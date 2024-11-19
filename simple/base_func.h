@@ -16,6 +16,9 @@ extern "C" {
 
 using ReturnType = std::variant<std::nullptr_t, std::string>;
 
+extern char** ARG_INPUT;
+extern int ARG_INPUT_LENGTH;
+
 typedef std::string(*FunctionPtr)(const std::vector<std::string>& args);
 
 extern std::unordered_map<std::string, FunctionPtr> outerFunctions;
