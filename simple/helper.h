@@ -41,7 +41,7 @@
 #else
 #include <dlfcn.h>
 #define LIBPATH "/usr/local/lib/simple_libs/lib"
-    #ifdef __APPLE__
+#ifdef __APPLE__
     #define LIB_EXT ".dylib"
     #define OS "APPLE"
 #else
