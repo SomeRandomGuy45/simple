@@ -4,6 +4,7 @@
 #include "bytecode.h"
 #include "table/Node.h"
 
+#include <variant>
 #include <algorithm>
 
 #ifdef __cplusplus
@@ -21,7 +22,7 @@ public:
 	void Compile(std::string customData = "");
 	void AddVariable(std::string name, std::string value);
 	void RemoveVariable(std::string name);
-	std::string RunFuncWithArgs(std::vector<std::string> args, std::string lineData, bool& isFunc);
+	std::variant<std::string, std::nullptr_t> RunFuncWithArgs(std::vector<std::string> args, std::string lineData, bool& isFunc);
 private:
 	std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> funcNames = returnAllFuncName();
 	std::string filePath;

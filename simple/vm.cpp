@@ -85,12 +85,11 @@ void VM::changeFilePath(std::string src)
 	filePath = src;
 }
 
-std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineData, bool& isFunc)
+std::variant<std::string, std::nullptr_t> VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineData, bool& isFunc)
 {
 	std::string returnVal;
 	for (std::string& arg : args)
 	{
-		arg = arg.substr(0, arg.size() - 1);
 		arg.erase(std::remove(arg.begin(), arg.end(), '\"'), arg.end());
 	}
 	for (const auto& [func_Name, func] : funcNames)
@@ -100,9 +99,9 @@ std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineD
 			isFunc = true;
 			if (args.size() > 0)
 			{
-				for (size_t i = 1; i < args.size(); i++)
+				for (size_t i = 0; i < args.size(); i++)
 				{
-					if (var_names.find(args[i]) != var_names.end())
+					if (var_names.count(args[i]) != 0)
 					{
 						args[i] = var_names[args[i]];
 					}
@@ -110,7 +109,7 @@ std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineD
 			}
 			ReturnType result = func(args);
 			if (std::holds_alternative<std::string>(result)) {
-				returnVal = std::get<std::string>(result);
+				return std::get<std::string>(result);
 			}
 		}
 	}
@@ -118,9 +117,9 @@ std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineD
 	{
 		if (args.size() > 0)
 		{
-			for (size_t i = 1; i < args.size(); i++)
+			for (size_t i = 0; i < args.size(); i++)
 			{
-				if (var_names.find(args[i]) != var_names.end())
+				if (var_names.count(args[i]) != 0)
 				{
 					args[i] = var_names[args[i]];
 				}
@@ -130,11 +129,11 @@ std::string VM::RunFuncWithArgs(std::vector<std::string> args, std::string lineD
 		{
 			ReturnType result = func(args);
 			if (std::holds_alternative<std::string>(result)) {
-				returnVal = std::get<std::string>(result);
+				return std::get<std::string>(result);
 			}
 		}
 	}
-	return returnVal;
+	return nullptr;
 }
 //This is the implementation of how we can run the code from the bytecode!
 void VM::Compile(std::string customData)
@@ -237,15 +236,23 @@ void VM::Compile(std::string customData)
 						}
 					}
 				}
-				op1 = RunFuncWithArgs(args1, op3, op1_is_func);
-				op2 = RunFuncWithArgs(args2, op4, op2_is_func);
+				std::variant<std::string, std::nullptr_t> value_1 = RunFuncWithArgs(args1, op3, op1_is_func);
+				std::variant<std::string, std::nullptr_t> value_2 = RunFuncWithArgs(args2, op4, op2_is_func);
+				if (std::holds_alternative<std::string>(value_1))
+				{
+					op1 = std::get<std::string>(value_1);
+				}
+				if (std::holds_alternative<std::string>(value_2))
+				{
+					op2 = std::get<std::string>(value_2);
+				}
 			} catch (...) {
 				// add something here later idc
 			}	
 
 			// Replace with actual variable values if they exist and its not a function
-			op1 = (var_names.count(op1) && op1_is_func == false) ? var_names[op1] : op1;
-			op2 = (var_names.count(op2) && op2_is_func == false)? var_names[op2] : op2;
+			op1 = (var_names.count(op1) != 0 && op1_is_func == false) ? var_names[op1] : op1;
+			op2 = (var_names.count(op2) != 0 && op2_is_func == false) ? var_names[op2] : op2;
 
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
