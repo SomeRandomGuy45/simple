@@ -16,21 +16,12 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     return result;
 }
 
-std::string change_line(const std::string& str)
-{
-	std::string result;
-	for (char c : str)
-	{
-		if (c == '\\n')
-		{
-			result += '\n';
-		}
-		else
-		{
-			result += c;
-		}
-	}
-	return result;
+void change_line(std::string& str) {
+    size_t pos = 0;
+    while ((pos = str.find("\\n", pos)) != std::string::npos) {
+        str.replace(pos, 2, "\n");
+        pos += 1; // Move past the replacement
+    }
 }
 
 Node VM::parse(std::string input)
@@ -192,6 +183,10 @@ void VM::Compile(std::string customData)
 				((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''))) {
 				arg = arg.substr(1, arg.size() - 2); // Strip outer quotes
 			}
+			if (arg.size() >= 2 && arg[arg.size() - 2] == '\\' && arg[arg.size() - 1] == 'n') {
+				arg.erase(arg.size() - 2);  // Remove the last two characters
+			}
+			change_line(arg);
 			lineData.push_back(arg); 
 		}
 		if (lineData[0] == "END")
