@@ -152,7 +152,7 @@ ReturnType sinFunc(std::vector<std::string> args)
         std::cout << "[SIN] Error: Invalid number of arguments\n";
         return nullptr;
     }
-    double angle;
+    double angle = 0;
     try {
         angle = std::stod(args[0]);
     } catch (std::exception& e) {

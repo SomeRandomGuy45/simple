@@ -153,27 +153,44 @@ static void clearFile(const std::string& tempPath) {
     file.close();
 }
 
+static void removeAllFiles()
+{
+     for (const auto& path : std::filesystem::directory_iterator(std::filesystem::temp_directory_path()))
+    {
+        if (path.is_regular_file())
+        {
+            std::string fileName = path.path().filename().string();
+            if (fileName.substr(0, 20) == "threadsimplebytecode" && path.path().extension() == ".sbcc")
+            {
+                std::filesystem::remove(path);
+            }
+        }
+    }
+}
+
 static bool runArgs(const std::string& arg, const std::string& command, const std::string& commandBefore) {
     if (arg == "--help" || arg == "-h" || arg == "-?") {
         #ifdef _WIN32
-        std::wstring name = L"Simple compiler " + std::wstring(StringToWString(SIMPLE_FULL_VERSION)) +
+        std::wstring name = L"Simple " + std::wstring(StringToWString(SIMPLE_FULL_VERSION)) +
                             L"\nUsage: simple [options] [script.simple]\nOptions:\n" +
                             L"  -h, --help, -?     Display this help message\n" +
                             L"  -v, --version      Display the version of Simple compiler\n" +
                             L"  -o, --output       Build's a .simple file and does not run it\n" + 
-                            L"  -sr --sbcc_run     Runs a .sbcc file\n";
+                            L"  -sr --sbcc_run     Runs a .sbcc file\n" +
+                            L"  -c, --clear        Clears temporary bytecode files\n";
         MessageBoxW(NULL, name.c_str(), L"Help", MB_OK | MB_ICONQUESTION);
         #endif
-        std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << "\n";
+        std::cout << "Simple " << SIMPLE_FULL_VERSION << "\n";
         std::cout << "Usage: simple [options] [script.simple]\n";
         std::cout << "Options:\n";
         std::cout << "  -h, --help, -?     Display this help message\n";
         std::cout << "  -v, --version      Display the version of Simple compiler\n";
         std::cout << "  -o, --output       Build's a .simple file and does not run it\n";
         std::cout << "  -sr --sbcc_run     Runs a .sbcc file\n";
+        std::cout << "  -c, --clear        Clears temporary bytecode files\n";
         return true;
     } else if (arg == "-v" || arg == "--version") {
-        std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << "\n";
+        std::cout << "Simple " << SIMPLE_FULL_VERSION << "\n";
         return true;
     } else if (arg == "-o" || arg == "--output") {
         Token* token = new Token(commandBefore, command, true);
@@ -190,6 +207,9 @@ static bool runArgs(const std::string& arg, const std::string& command, const st
         VM* vm = new VM(command);
         vm->Compile();
         delete vm;
+        return true;
+    } else if (arg == "-c" || arg == "--clear") {
+        removeAllFiles();
         return true;
     }
     return false;
@@ -250,7 +270,7 @@ int main(int argc, char** argv) {
 
     std::ofstream outputFile(tempPath, std::ios::in | std::ios::out | std::ios::trunc);
 
-    std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
+    std::cout << "Simple " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
 
     while (true) {
         outputFile.seekp(0);
@@ -270,7 +290,7 @@ int main(int argc, char** argv) {
 
         if (newLine == "clear()") {
             std::cout << "\033[2J\033[1;1H";
-            std::cout << "Simple compiler " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
+            std::cout << "Simple " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
         }
 
         if (newLine == "clear") {

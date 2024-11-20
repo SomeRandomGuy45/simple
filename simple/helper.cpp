@@ -48,22 +48,30 @@ std::string getRandomFileName() {
 #endif
 
     // Create a stringstream to format the file name
-    std::stringstream ss;
+    std::string ss;
+
+    size_t len = 0;
 
     // Format the date as MM-DD-YY
-    ss << "SIMPLE-COMPILE-"
-        << std::setfill('0') << std::setw(2) << (now.tm_mon + 1) << "-"
-        << std::setfill('0') << std::setw(2) << now.tm_mday << "-"
-        << std::setfill('0') << std::setw(2) << (now.tm_year % 100);
+    ss += "threadsimplebytecode";
 
-    // Append a random number for uniqueness
-    int randomNum = std::rand() % 10000;
-    ss << "-" << std::setfill('0') << std::setw(4) << randomNum;
+    for (const auto& path : std::filesystem::directory_iterator(std::filesystem::temp_directory_path()))
+    {
+        if (path.is_regular_file())
+        {
+            std::string fileName = path.path().filename().string();
+            if (fileName.substr(0, 20) == "threadsimplebytecode" && path.path().extension() == ".sbcc")
+            {
+                len++;
+            }
+        }
+    }
+    ss += "-" + std::to_string(len);
 
     // Add the file extension
-    ss << ".sbcc";
+    ss += ".sbcc";
 
-    return ss.str();
+    return ss;
 }
 
 #ifdef __cplusplus
