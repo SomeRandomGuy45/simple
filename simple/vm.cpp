@@ -119,6 +119,10 @@ std::variant<std::string, std::nullptr_t> VM::RunFuncWithArgs(std::vector<std::s
 			if (std::holds_alternative<std::string>(result)) {
 				return std::get<std::string>(result);
 			}
+			else
+			{
+				return "";
+			}
 		}
 	}
 	for (const auto& [func_name, func] : outerFunctions)
@@ -138,6 +142,10 @@ std::variant<std::string, std::nullptr_t> VM::RunFuncWithArgs(std::vector<std::s
 			ReturnType result = func(args);
 			if (std::holds_alternative<std::string>(result)) {
 				return std::get<std::string>(result);
+			}
+			else
+			{
+				return "";
 			}
 		}
 	}
