@@ -124,8 +124,19 @@ void Token::processScriptLines() {
 
     for (std::string& line : scriptLines) {
         currentLine += 1;
+        line = removeWhitespace(removeComments(line), false);
+        std::smatch temp;
+
         if (line.empty()) {
             continue;
+        }
+        if (std::regex_match(line, temp, std::regex(R"((?:global\s+)?(\w+)\s*=\s*["'])"))|| line == "\"" || line == "\'")
+        {
+            if (!temp.str(1).empty()) {
+                currentVarHandle = temp.str(1);
+                std::cout << currentVarHandle << "\n";
+            }
+            inString = !inString;
         }
 
         if (line.substr(0, 2) == "/*") {
@@ -148,7 +159,6 @@ void Token::processScriptLines() {
             currentBytecodeFile << "DOFUNCCALL,";
         }
 
-        line = removeWhitespace(removeComments(line), false);
         handleLine(line, currentLine, trapInFunction);
     }
 
@@ -254,9 +264,21 @@ void Token::handleLibraryAddition(const std::string& line, int64_t currentLine) 
 
 void Token::handleVariableAssignment(const std::string& line, int64_t currentLine) {
     std::smatch match;
-    if (std::regex_match(line, match, std::regex(R"((\w+)\s*=\s*(.+))"))) {
+    if (std::regex_match(line, match, std::regex(R"((\w+)\s*=\s*([\s\S]+))"))) {
         currentBytecodeFile << "DEFINEVAR," + std::string(match[1]) + "," + std::string(match[2]) << std::endl;
     } else {
+        if (inString)
+        {
+            fullString += line + "\\n";
+            return;
+        }
+        if (line == "\"" && inString == false && !currentVarHandle.empty())
+        {
+            currentBytecodeFile << "DEFINEVAR," + currentVarHandle + "," + fullString << std::endl;
+            currentVarHandle = "";
+            fullString = "";
+            return;
+        }
         std::cerr << "[TOKEN-PARSER] Couldn't find bytecode with this line: " + line + ". Line index is " + std::to_string(currentLine) << "\n";
         throw std::runtime_error("Failed to run script!");
     }

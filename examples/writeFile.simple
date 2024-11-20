@@ -7,7 +7,11 @@
 
 // Gets the 2nd arg
 global InputFile = getArgs->(2)
-
+if InputFile == "" then
+    print->("Didn't find file name!")
+    // Since we cant find the file name we will just call it file.txt
+    InputFile = "file.txt"
+end
 // Gets the 3rd arg if there is one. If not we would default to 10 lines
 global Lines = getArgs->(3)
 if isNumber->(Lines) == false then

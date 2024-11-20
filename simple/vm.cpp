@@ -16,6 +16,23 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     return result;
 }
 
+std::string change_line(const std::string& str)
+{
+	std::string result;
+	for (char c : str)
+	{
+		if (c == '\\n')
+		{
+			result += '\n';
+		}
+		else
+		{
+			result += c;
+		}
+	}
+	return result;
+}
+
 Node VM::parse(std::string input)
 {
     Node root;

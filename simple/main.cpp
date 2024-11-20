@@ -160,7 +160,7 @@ static void removeAllFiles()
         if (path.is_regular_file())
         {
             std::string fileName = path.path().filename().string();
-            if (fileName.substr(0, 20) == "threadsimplebytecode" && path.path().extension() == ".sbcc")
+            if ((fileName.substr(0, 20) == "threadsimplebytecode" && path.path().extension() == ".sbcc") || path.path().extension() == ".simple")
             {
                 std::filesystem::remove(path);
             }
@@ -168,8 +168,12 @@ static void removeAllFiles()
     }
 }
 
-static bool runArgs(const std::string& arg, const std::string& command, const std::string& commandBefore) {
+static bool runArgs(const std::string& arg, const std::string& command, const std::string& commandBefore, int currentIndex) {
     if (arg == "--help" || arg == "-h" || arg == "-?") {
+        if (currentIndex != 1)
+        {
+            return false;
+        }
         #ifdef _WIN32
         std::wstring name = L"Simple " + std::wstring(StringToWString(SIMPLE_FULL_VERSION)) +
                             L"\nUsage: simple [options] [script.simple]\nOptions:\n" +
@@ -190,9 +194,17 @@ static bool runArgs(const std::string& arg, const std::string& command, const st
         std::cout << "  -c, --clear        Clears temporary bytecode files\n";
         return true;
     } else if (arg == "-v" || arg == "--version") {
+        if (currentIndex != 1)
+        {
+            return false;
+        }
         std::cout << "Simple " << SIMPLE_FULL_VERSION << "\n";
         return true;
     } else if (arg == "-o" || arg == "--output") {
+        if (currentIndex != 1 && currentIndex != 2)
+        {
+            return false;
+        }
         Token* token = new Token(commandBefore, command, true);
         try {
             token->StartReadingFile();
@@ -204,11 +216,19 @@ static bool runArgs(const std::string& arg, const std::string& command, const st
         delete token;
         return true;
     } else if (arg == "-sr" || arg == "--sbcc_run") {
+        if (currentIndex != 1)
+        {
+            return false;
+        }
         VM* vm = new VM(command);
         vm->Compile();
         delete vm;
         return true;
     } else if (arg == "-c" || arg == "--clear") {
+        if (currentIndex != 1)
+        {
+            return false;
+        }
         removeAllFiles();
         return true;
     }
@@ -222,7 +242,7 @@ static bool allArgs(int argc, char** argv) {
             bool r_val = false;
             std::string argBefore = (i > 0) ? argv[i - 1] : "";  // Check bounds
             std::string argAfter = (i < argc - 1) ? argv[i + 1] : ""; // Check bounds
-            r_val = runArgs(std::string(argv[i]), argAfter, argBefore);
+            r_val = runArgs(std::string(argv[i]), argAfter, argBefore, i);
             if (r_val) {
                 KILL = true;
             }
@@ -238,6 +258,11 @@ int main(int argc, char** argv) {
     if (shouldKill) {
         return EXIT_SUCCESS;
     }
+
+    /*
+    * Cleans the files that we just created for VM
+    */
+    removeAllFiles();
 
     #ifdef _WIN32
     SetConsoleCtrlHandler((PHANDLER_ROUTINE)console_ctrl_handler, TRUE);

@@ -29,12 +29,15 @@ private:
     std::string FilePath; // File path to the current file
     std::string FileOutput; // Output file path for bytecode (optional)
     std::string currentLine; // Current line being processed
+    std::string currentVarHandle; // Current variable handle
+    std::string fullString; // Full string of one var
     std::fstream currentFile; // Stream for the current script file
     std::fstream currentBytecodeFile; // Stream for the bytecode output file
     std::vector<std::string> scriptLines; // Lines read from the script file
 
 
     bool shouldKill = false;
+    bool inString = false;
 
     // Private helper methods can be declared here
     void processScriptLines(); // Process each line from the script

@@ -15,3 +15,10 @@ end
 if print->("hi") == print->("bye") then
     print->("print IS blank lol")
 end
+
+global myCoolStringTest = "
+    myCoolStringTest
+    myCoolStringTest
+    myCoolStringTest
+"
+print->(myCoolStringTest)
