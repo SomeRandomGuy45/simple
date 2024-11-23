@@ -216,6 +216,8 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     else if (line.substr(0, 3) == "end") {
         if (line.substr(0, 4) == "end!") {
             trapInFunction = false;
+            currentBytecodeFile << "ENDFUNC" << std::endl;
+            return;
         }
         currentBytecodeFile << "END" << std::endl;
     }

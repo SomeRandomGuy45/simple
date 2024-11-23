@@ -24,6 +24,17 @@ void change_line(std::string& str) {
     }
 }
 
+void VM::DoLogic(VM* v)
+{
+	for (const auto& [key, value] : functions) {
+		if (value.empty()) continue;
+		v->AddFunction(key, value);
+	}
+	for (const auto& [key, value] : functions_args) {
+		v->AddFunctionArgs(key, value);
+	}
+}
+
 Node VM::parse(std::string input)
 {
     Node root;
@@ -74,6 +85,7 @@ void VM::RunScriptFunction(std::string func_name, std::vector<std::string> args)
         }
     }
 	VM* vm = new VM();
+	DoLogic(vm);
 	for (size_t i = 0; i < funcargs.size(); ++i) {
 		if (i < args.size())
 		{
@@ -157,15 +169,13 @@ void VM::Compile(std::string customData)
 	bool stuckInComment = false;
 	bool skipStatment = false;
 	std::string currentFunc = "";
-	if (customData == "")
-	{
-		std::ifstream file(filePath);
-		if (!file.is_open())
+	if (customData.empty()) {
+		if (filePath.empty())
 		{
-			throw std::runtime_error("Error couldn't open compiled file with path: " + filePath);
+			filePath = getRandomFileName();
 		}
-		while (std::getline(file, currentLine))
-		{
+		std::ifstream file(filePath);
+		while (std::getline(file, currentLine)) {
 			scriptLines.push_back(currentLine);
 		}
 		file.close();
@@ -197,7 +207,7 @@ void VM::Compile(std::string customData)
 			change_line(arg);
 			lineData.push_back(arg); 
 		}
-		if (lineData[0] == "END")
+		if (lineData[0] == "END" || lineData[1] == "END")
 		{
 			//we are done with the statement!
 			skipStatment = false;
@@ -212,8 +222,13 @@ void VM::Compile(std::string customData)
 		{
 			continue;
 		}
-		if (lineData[1] == "END" && lineData[0] == "DOFUNCCALL")
+		if (lineData[1] == "ENDFUNC")
 		{
+			if (functions[currentFunc].empty())
+			{
+				functions.erase(currentFunc);
+				functions_args.erase(currentFunc);
+			}
 			currentFunc = "";
 			continue;
 		}
@@ -590,6 +605,22 @@ void VM::AddVariable(std::string name, std::string value)
 void VM::RemoveVariable(std::string name)
 {
 	var_names.erase(name);
+}
+
+void VM::AddFunction(std::string func_name, std::string func_value)
+{
+	functions[func_name] = func_value;
+}
+
+void VM::AddFunctionArgs(std::string func_name, std::string func_args)
+{
+	functions_args[func_name] = func_args;
+}
+
+void VM::RemoveFunction(std::string func_name)
+{
+	functions.erase(func_name);
+	functions_args.erase(func_name);
 }
 
 #ifdef __cplusplus

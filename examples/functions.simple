@@ -20,6 +20,7 @@ end!
 
 func! argFunc(arg1, arg2)
     print->(arg1, arg2)
+    myFunc->()
 end!
 
 /*
@@ -28,7 +29,6 @@ end!
 
 argFunc->("h", "cool")
 argFunc->("bye!", "cool")
-myFunc->()
 
 /*
 * This function is not completed yet
