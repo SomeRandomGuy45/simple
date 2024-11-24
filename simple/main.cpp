@@ -252,17 +252,16 @@ static bool allArgs(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
+    /*
+    * Cleans the files that we just created for VM
+    */
+    removeAllFiles();
     ARG_INPUT_LENGTH = argc;
     ARG_INPUT = argv;
     bool shouldKill = allArgs(argc, argv);
     if (shouldKill) {
         return EXIT_SUCCESS;
     }
-
-    /*
-    * Cleans the files that we just created for VM
-    */
-    removeAllFiles();
 
     #ifdef _WIN32
     SetConsoleCtrlHandler((PHANDLER_ROUTINE)console_ctrl_handler, TRUE);

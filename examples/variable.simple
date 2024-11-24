@@ -17,8 +17,8 @@ if print->("hi") == print->("bye") then
 end
 
 global myCoolStringTest = "
-    myCoolStringTest
-    myCoolStringTest
-    myCoolStringTest
+    myCoolStringTest ball
+    myCoolStringTest balls
+    myCoolStringTest ballz
 "
 print->(myCoolStringTest)

@@ -168,6 +168,7 @@ void VM::Compile(std::string customData)
 {
 	bool stuckInComment = false;
 	bool skipStatment = false;
+	bool isElseif = false;
 	std::string currentFunc = "";
 	if (customData.empty()) {
 		if (filePath.empty())
@@ -211,6 +212,7 @@ void VM::Compile(std::string customData)
 		{
 			//we are done with the statement!
 			skipStatment = false;
+			isElseif = false;
 		}
 		if (lineData[0] == "/*") {
 			stuckInComment = true;
@@ -304,7 +306,91 @@ void VM::Compile(std::string customData)
 			if (it != comparisonOps.end()) {
 				skipStatment = !it->second(op1, op2); // Negate for skipStatment logic
 			}
-		}
+			//ifStatementValues.push_back(skipStatment);
+		} else if (lineData[0] == "ELSEIFOP" && skipStatment == true)
+		{
+			std::string op1 = removeWhitespace(lineData[1], false);
+			std::string op2 = removeWhitespace(lineData[3], false);
+			bool op1_is_func = false;
+			bool op2_is_func = false;
+
+			try {
+				std::string op3 = op1.substr(0,op1.find("->("));
+				std::vector<std::string> args1; // Vector to store arguments
+				size_t start = op1.find("->(") + 3; // Skip "->("
+				size_t end = op1.find(")", start); // Find closing parenthesis
+				if (start != std::string::npos && end != std::string::npos) {
+					std::string arg = op1.substr(start, end - start);
+					std::stringstream ss(arg);
+					while (std::getline(ss, arg, ',')) {
+						// Trim whitespace around the argument
+						arg.erase(0, arg.find_first_not_of(" \t\n"));
+						arg.erase(arg.find_last_not_of(" \t\n") + 1);
+						if (!arg.empty()) {
+							args1.push_back(arg); // Add non-empty argument to the vector
+						}
+					}
+				}
+				std::string op4 = op2.substr(0,op2.find("->("));
+				std::vector<std::string> args2; // Vector to store arguments
+				start = op2.find("->(") + 3; // Skip "->("
+				end = op2.find(")", start); // Find closing parenthesis
+				if (start != std::string::npos && end != std::string::npos) {
+					std::string arg = op2.substr(start, end - start);
+					std::stringstream ss_2(arg);
+					while (std::getline(ss_2, arg, ',')) {
+						// Trim whitespace around the argument
+						arg.erase(0, arg.find_first_not_of(" \t\n"));
+						arg.erase(arg.find_last_not_of(" \t\n") + 1);
+						if (!arg.empty()) {
+							args2.push_back(arg); // Add non-empty argument to the vector
+						}
+					}
+				}
+				std::variant<std::string, std::nullptr_t> value_1 = RunFuncWithArgs(args1, op3, op1_is_func);
+				std::variant<std::string, std::nullptr_t> value_2 = RunFuncWithArgs(args2, op4, op2_is_func);
+				if (std::holds_alternative<std::string>(value_1))
+				{
+					op1 = std::get<std::string>(value_1);
+				}
+				if (std::holds_alternative<std::string>(value_2))
+				{
+					op2 = std::get<std::string>(value_2);
+				}
+			} catch (...) {
+				// add something here later idc
+			}	
+
+			// Replace with actual variable values if they exist and its not a function
+			op1 = (var_names.count(op1) != 0 && op1_is_func == false) ? var_names[op1] : op1;
+			op2 = (var_names.count(op2) != 0 && op2_is_func == false) ? var_names[op2] : op2;
+
+			// Map operators to lambda functions for comparisons
+			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
+				{"==", std::equal_to<std::string>()},
+				{"~=", std::not_equal_to<std::string>()},
+				{"!>", std::greater<std::string>()},
+				{">=", std::greater_equal<std::string>()},
+				{"<!", std::less<std::string>()},
+				{"<=", std::less_equal<std::string>()}
+			};
+
+			// Use the comparison operator to determine skipStatment
+			auto it = comparisonOps.find(lineData[2]);
+			if (it != comparisonOps.end()) {
+				skipStatment = !it->second(op1, op2); // Negate for skipStatment logic
+				isElseif = !skipStatment;
+			}
+		} else if (lineData[0] == "ELSE") {
+			if (skipStatment && !isElseif)
+			{
+				skipStatment = false;
+				continue;
+			}
+
+			skipStatment = true;
+            continue;
+        }
 		if (skipStatment)
 		{
 			continue;

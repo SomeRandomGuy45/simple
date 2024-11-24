@@ -15,6 +15,16 @@
 func! myFunc()
     if "hi" ~= "hello world!" then
         print->("hi doesn't equ!al to hello world!")
+        if "hello world!" ~= "hello world!" then
+            print->("cool!")
+        elseif "hello world!" == "hello world!" then
+            print->("cool! but else if!")
+        else
+            print->("cool! but else")
+        end
+        print->("donze!")
+    else
+        print->("donze nothing!")
     end
 end!
 
