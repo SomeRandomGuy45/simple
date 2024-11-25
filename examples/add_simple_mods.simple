@@ -2,7 +2,7 @@
 !define MIN_VERSION v1.0.0
 
 /*
-* Example of how you could import a lib
+* Example of how you could import a lib made from a .simple file
 */
 
 add! functions
