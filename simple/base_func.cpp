@@ -240,16 +240,6 @@ ReturnType freeMemory(std::vector<std::string> args)
     return nullptr;
 }
 
-ReturnType exportFuncs(std::vector<std::string> args) {
-    if (args.size() < 1)
-    {
-        std::cout << "[EXPORT] Error: Invalid number of arguments\n";
-        return nullptr;
-    }
-    std::cout << "[EXPORT] Hey! This function is still WIP!\n[EXPORT] Once the function/feature is finshed please include !define MODULE_EXPORT true\n[EXPORT] Thank you!\n";
-    return nullptr;
-}
-
 ReturnType exit_program(std::vector<std::string> args) {
     std::exit(0);
     return nullptr;
@@ -307,7 +297,6 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"sub", sub},
         {"div", divi},
         {"multi", multi},
-        {"export", exportFuncs},
         {"exit", exit_program},
         {"getInput", get_users_input},
         {"getArgs", getArgs},

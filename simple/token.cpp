@@ -134,7 +134,6 @@ void Token::processScriptLines() {
         {
             if (!temp.str(1).empty()) {
                 currentVarHandle = temp.str(1);
-                std::cout << currentVarHandle << "\n";
             }
             inString = !inString;
         }
@@ -174,8 +173,26 @@ void Token::processScriptLines() {
 // Handle different types of lines
 void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunction) {
     std::smatch match;
+    // Global variable assignment
+    if (std::regex_match(line, match, std::regex(R"(global\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*\(([^()]*)\))"))) {
+        currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
+    }
+    else if (std::regex_match(line, match, std::regex(R"(([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*\(([^()]*)\))"))) {
+        currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
+    }
+    else if (line.substr(0, 6) == "global") {
+        if (std::regex_match(line, match, std::regex(R"(global\s+(\w+)\s*=\s*(.+))"))) {
+            size_t pos = 0;
+            std::string str = match[2].str();
+            while ((pos = str.find(",", pos)) != std::string::npos) {
+                str.replace(pos, 2, "+");
+                pos += 1; // Move past the replacement
+            }
+            currentBytecodeFile << "DEFINEVAR," + std::string(match[1]) + "," + str << std::endl;
+        }
+    }
     // Function call
-    if (std::regex_match(line, match, std::regex(R"(\s*(\w+(?:\.\w+)?)\s*->\s*\((.*?)\))"))) {
+    else if (std::regex_match(line, match, std::regex(R"(\s*(\w+(?:\.\w+)?)\s*->\s*\((.*?)\))"))) {
         processFunctionCall(match);
     }
     // return statement
@@ -193,26 +210,20 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     else if (line.substr(0,4) == "else") {
         currentBytecodeFile << "ELSE" << std::endl;
     }
-    // Global variable assignment
-    else if (std::regex_match(line, match, std::regex(R"(global\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*\(([^()]*)\))"))) {
-        currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
-    }
-    else if (std::regex_match(line, match, std::regex(R"(([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*\(([^()]*)\))"))) {
-        currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
-    }
     // Other cases...
     else if (line.substr(0, 7) == "!define") {
         if (std::regex_match(line, match, std::regex(R"(!define\s+(.*)\s+(.*))"))) {
             currentBytecodeFile << "DEFTOP," + std::string(match[1]) + "," + std::string(match[2]) << std::endl;
         }
     }
-    else if (line.substr(0, 6) == "global") {
-        if (std::regex_match(line, match, std::regex("global\\s+(\\w+)\\s*=\\s*(?:\"([^\"]*(?:\\n[^\"]*)*)\"|([^\"\\n]+(?:\\n[^\"\\n]*)*))"))) {
-            currentBytecodeFile << "DEFINEVAR," + std::string(match[1]) + "," + (match[2].str().empty() ? match[3].str() : match[2].str()) << std::endl;
-        }
-    }
     else if (line.substr(0, 5) == "func!") {
         handleFunctionDefinition(line, trapInFunction);
+    }
+    else if (line.substr(0, 4) == "add!") {
+        currentBytecodeFile << "LOADSLIB," + line.substr(5) << std::endl;
+        Token* token = new Token(std::filesystem::current_path().string() + "/" + line.substr(5) + ".simple", line.substr(5), true);
+        token->StartReadingFile();
+        delete token;
     }
     else if (line.substr(0, 3) == "add") {
         handleLibraryAddition(line, currentLine);

@@ -28,10 +28,10 @@ void VM::DoLogic(VM* v)
 {
 	for (const auto& [key, value] : functions) {
 		if (value.empty()) continue;
-		v->AddFunction(key, value);
+		v->AddFunction(key.substr(key.find(".") + 1), value);
 	}
 	for (const auto& [key, value] : functions_args) {
-		v->AddFunctionArgs(key, value);
+		v->AddFunctionArgs(key.substr(key.find(".") + 1), value);
 	}
 }
 
@@ -164,7 +164,7 @@ std::variant<std::string, std::nullptr_t> VM::RunFuncWithArgs(std::vector<std::s
 	return nullptr;
 }
 //This is the implementation of how we can run the code from the bytecode!
-void VM::Compile(std::string customData)
+void VM::Compile(std::string customData, std::string moduleName)
 {
 	bool stuckInComment = false;
 	bool skipStatment = false;
@@ -326,6 +326,10 @@ void VM::Compile(std::string customData)
 		}
 		else if (lineData[0] == "BEGINFUN")
 		{
+			if (!moduleName.empty())
+			{
+				lineData[1] = moduleName + "." + lineData[1];
+			}
 			functions[lineData[1]] = "";;
 			for (size_t i = 2; i < lineData.size(); ++i)
 			{
@@ -349,6 +353,29 @@ void VM::Compile(std::string customData)
 				stuffAdd += lineData[i] + ((lineData[i] == "EOF" || lineData[i] == "END") ? " " : ",");
 			}
 			functions[currentFunc] += stuffAdd + "\n";
+		}
+		else if (lineData[0] == "LOADSLIB") {
+			std::string libPath = std::filesystem::current_path().string() + "/" + lineData[1] + ".sbcc";
+			if (!std::filesystem::exists(libPath))
+			{
+				std::cerr << "[ERROR]: Library file not found: " << libPath << std::endl;
+                return;
+			}
+			VM* vm = new VM(libPath);
+			vm->Compile("", lineData[1]);
+		    for (const auto& [name, value] : vm->functions)
+			{
+				functions[name] = value;
+			}
+			for (const auto& [name, value] : vm->functions_args)
+			{
+				functions_args[name] = value;
+			}
+			for (const auto& [name, value] : vm->var_names)
+			{
+				var_names[name] = value;
+			}
+			delete vm;
 		}
 		else if (lineData[0] == "DEFTOP")
 		{
@@ -396,11 +423,76 @@ void VM::Compile(std::string customData)
 		} 
 		else if (lineData[0] == "DEFINEVAR")
 		{
+			if (!moduleName.empty())
+			{
+				lineData[1] = moduleName + "." + lineData[1];
+			}
 			lineData[2].erase(std::remove(lineData[2].begin(), lineData[2].end(), '\"'), lineData[2].end());
-			var_names[lineData[1]] = lineData[2];
+			std::vector<std::string> args;
+			std::string temp = lineData[2].substr(0, lineData[2].find("->"));
+			if (functions.count(temp) != 0)
+			{
+				std::string data = lineData[2];
+				std::vector<std::string> args;
+				size_t pos = data.find("->(");
+				if (pos != std::string::npos) {
+					data = data.substr(pos + 3); // Extract substring after "->("
+					data.erase(std::remove(data.begin(), data.end(), ')'), data.end()); // Remove closing ')'
+				}
+				std::stringstream ss2(data);
+				while (std::getline(ss2, arg, '+')) {
+					// Trim whitespace around the argument
+					arg.erase(arg.find_last_not_of(" \t\n") + 1);
+					arg.erase(0, arg.find_first_not_of(" \t\n")); // Trim leading whitespace
+
+					if (arg.size() > 1 && 
+						((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''))) {
+						arg = arg.substr(1, arg.size() - 2); // Strip outer quotes
+					}
+					if (arg.size() >= 2 && arg[arg.size() - 2] == '\\' && arg[arg.size() - 1] == 'n') {
+						arg.erase(arg.size() - 2);  // Remove the last two characters
+					}
+					change_line(arg);
+					args.push_back(arg); 
+				}
+				if (lineData.size() > 0)
+				{
+					for (size_t i = 2; i < lineData.size(); i++)
+					{
+						if (((lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
+						{
+							continue;
+						}
+						std::string backUpVar = lineData[i];
+						if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+							lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+						}
+						if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+							for (const auto& var : var_names)
+							{
+								if (var.first == lineData[i]) {
+                                    args.push_back(var.second);  // Use the stored value if found
+                                }
+							}
+						} else {
+							args.push_back(backUpVar);  // Use the original string if not found
+						}
+					}
+				}
+				RunScriptFunction(temp, args);
+				var_names[lineData[1]] = "";
+			}
+			else
+			{
+				var_names[lineData[1]] = lineData[2];
+			}
 		}
 		else if (lineData[0] == "RUNANDDEFVAR")
 		{
+			if (!moduleName.empty())
+			{
+				lineData[1] = moduleName + "." + lineData[1];
+			}
 			std::vector<std::string> args;
 			if (functions.count(lineData[1]) != 0)
 			{
@@ -430,6 +522,7 @@ void VM::Compile(std::string customData)
 					}
 				}
 				RunScriptFunction(lineData[2], args);
+				var_names[lineData[1]] = "";
 			}
 			for (const auto& [func_Name, func] : funcNames)
 			{

@@ -1,7 +1,7 @@
 !define MIN_RAM 256
 !define MIN_VERSION v1.0.0
 
-// estlib of loading a library, do not run this file as it will not work
+// testlib of loading a library, do not run this file as it will not work
 add testlib
 
 // This is how you call a imported library

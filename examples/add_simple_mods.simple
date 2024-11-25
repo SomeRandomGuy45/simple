@@ -1,0 +1,16 @@
+!define MIN_RAM 256
+!define MIN_VERSION v1.0.0
+
+/*
+* Example of how you could import a lib
+*/
+
+add! functions
+
+func! my2ndFunc()
+    print->("My cool 2nd function")
+end!
+
+functions.argFunc->("NO1", "NO2")
+my2ndFunc->()
+print->(functions.myVar)
