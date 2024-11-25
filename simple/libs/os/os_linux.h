@@ -12,5 +12,7 @@
 
 #include <unistd.h>
 
+ReturnType createWin(std::vector<std::string> args);
+
 #endif
 #endif

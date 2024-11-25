@@ -7,8 +7,7 @@
 #include <windows.h>
 #include "os_header.h"
 
-// TODO
-
+ReturnType createWin(std::vector<std::string> args);
 
 #endif
 #endif

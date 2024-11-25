@@ -13,6 +13,7 @@ set(SRCS
     token.cpp
     vm.cpp
     Node.cpp
+    os_windows.cpp
 )
 
 # Create the dist directory if it doesn't exist
@@ -44,6 +45,10 @@ add_custom_command(TARGET simple POST_BUILD
     COMMAND install_name_tool -change @rpath/libsimple_main.dylib @executable_path/libsimple_main.dylib
     "${CMAKE_BINARY_DIR}/dist/simple"
 )
+endif()
+
+if (WIN32)
+TARGET_LINK_LIBRARIES(simple PRIVATE gdi32)
 endif()
 
 # Clean target

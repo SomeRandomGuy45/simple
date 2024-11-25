@@ -2,7 +2,7 @@
 #define OS_HEADER_MAIN
 #if defined(__APPLE__) && defined(__MACH__)
 
-// TODO
+ReturnType createWin(std::vector<std::string> args);
 
 #endif
 #endif
