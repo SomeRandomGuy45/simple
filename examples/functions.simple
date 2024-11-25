@@ -5,7 +5,13 @@
 !define MIN_RAM 256
 !define MIN_VERSION v1.0.0
 
+add! variable
+
 global myVar = "Hello world!"
+
+func! myTestFunc()
+    variable.my2ndFunc->()
+end!
 
 func! myFunc()
     if "hi" ~= "hello world!" then

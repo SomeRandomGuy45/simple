@@ -13,4 +13,6 @@ end!
 
 functions.argFunc->("NO1", "NO2")
 my2ndFunc->()
+functions.myTestFunc->()
+print->(variable.myCoolStringTest)
 print->(functions.myVar)

@@ -43,7 +43,6 @@ private:
 	std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string>)>> funcNames = returnAllFuncName();
 	std::string filePath;
 	std::string currentLine;
-	std::string moduleName_;
 	std::vector<std::string> scriptLines;
 
 	uint64_t totalRAM = getTotalRAM();
