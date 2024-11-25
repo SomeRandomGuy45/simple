@@ -312,7 +312,6 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"getInput", get_users_input},
         {"getArgs", getArgs},
         {"isNumber", isANumber},
-        {"createWin", createWin}
     };
 }
 

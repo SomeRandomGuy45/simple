@@ -7,7 +7,7 @@
 #include <windows.h>
 #include "os_header.h"
 
-ReturnType createWin(std::vector<std::string> args);
+
 
 #endif
 #endif
