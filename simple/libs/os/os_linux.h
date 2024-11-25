@@ -2,6 +2,8 @@
 #define OS_HEADER_MAIN
 #ifdef __linux__
 
+#include "os_header.h"
+
 #if defined(__has_include)
     #if __has_include(<X11/Xlib.h>)
         #include <X11/Xlib.h>
