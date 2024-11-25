@@ -178,6 +178,10 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     if (std::regex_match(line, match, std::regex(R"(\s*(\w+(?:\.\w+)?)\s*->\s*\((.*?)\))"))) {
         processFunctionCall(match);
     }
+    // return statement
+    else if (std::regex_match(line, match, std::regex(R"(return\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*)"))) {
+        currentBytecodeFile << "RETURN," << std::string(match[1]) << std::endl;
+    }
     // If statement
     else if (std::regex_match(line, match, std::regex(R"(if\s+(.+?)\s*[^->](==|~=|>=|>|<=|<)\s*(.+?)\s*then)"))) {
         currentBytecodeFile << "IFOP," << std::string(match[1]) << "," << std::string(match[2]) << "," << std::string(match[3]) << std::endl;
