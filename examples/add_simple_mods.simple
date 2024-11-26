@@ -9,10 +9,13 @@ add! functions
 
 func! my2ndFunc()
     print->("My cool 2nd function")
+    //functions.myFunc->()
+    return functions.argFunc->("balls", "sdfjsd")
 end!
 print->("OKOK", "OK2OK2OK", "OK3OK", "OK")
 functions.argFunc->("NO1", "NO2")
-my2ndFunc->()
+global returnVal = my2ndFunc->()
+print->(returnVal)
 functions.myTestFunc->()
 print->(variable.myCoolStringTest)
 print->(functions.myVar)

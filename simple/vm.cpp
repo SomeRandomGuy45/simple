@@ -1,5 +1,9 @@
 #include "vm.h"
 
+std::unordered_map<std::string, std::string> functions_module;
+std::unordered_map<std::string, std::string> functions_module_args;
+std::unordered_map<std::string, std::string> var_module_names;
+
 std::vector<std::string> split(const std::string& str, char delimiter) {
     std::vector<std::string> result;
     std::stringstream ss(str);
@@ -32,6 +36,15 @@ void VM::DoLogic(VM* v)
 	}
 	for (const auto& [key, value] : functions_args) {
 		v->AddFunctionArgs(key.substr(key.find(".") + 1), value);
+	}
+	for (const auto& [key, value] : functions_module) {
+		v->AddFunction(key, value);
+	}
+	for (const auto& [key, value] : functions_module_args) {
+		v->AddFunctionArgs(key, value);
+	}
+	for (const auto& [key, value] : var_module_names) {
+		v->AddVariable(key, value);
 	}
 }
 
@@ -71,9 +84,9 @@ VM::VM(std::string src)
 	filePath = src;
 }
 
-void VM::RunScriptFunction(std::string func_name, std::vector<std::string> args)
+std::string VM::RunScriptFunction(std::string func_name, std::vector<std::string> args)
 {
-	if (functions.count(func_name) == 0 && functions_args.count(func_name) == 0) {return;}
+	if (functions.count(func_name) == 0 && functions_args.count(func_name) == 0) {return "";}
 	std::vector<std::string> funcargs = split(functions_args[func_name], ',');
 	for (auto& [key, data] : functions) {
     	if (key != func_name) {
@@ -97,7 +110,9 @@ void VM::RunScriptFunction(std::string func_name, std::vector<std::string> args)
 		}
 	}
 	vm->Compile(functions[func_name]);
+	std::string output = vm->returnValue;
 	delete vm;
+	return output;
 }
 
 void VM::changeFilePath(std::string src)
@@ -231,6 +246,11 @@ void VM::Compile(std::string customData, std::string moduleName)
 				functions.erase(currentFunc);
 				functions_args.erase(currentFunc);
 			}
+			if (!moduleName.empty())
+			{
+				functions_module[currentFunc] = functions[currentFunc];
+				functions_module_args[currentFunc] = functions_args[currentFunc];
+			}
 			currentFunc = "";
 			continue;
 		}
@@ -310,7 +330,9 @@ void VM::Compile(std::string customData, std::string moduleName)
 				}
 			}
 			//ifStatementValues.push_back(skipStatment);
-		} else if (lineData[0] == "ELSE") {
+		} 
+		else if (lineData[0] == "ELSE") 
+		{
 			if (skipStatment && !isElseif)
 			{
 				skipStatment = false;
@@ -353,6 +375,71 @@ void VM::Compile(std::string customData, std::string moduleName)
 				stuffAdd += lineData[i] + ((lineData[i] == "EOF" || lineData[i] == "END") ? " " : ",");
 			}
 			functions[currentFunc] += stuffAdd + "\n";
+		}
+		else if (lineData[0] == "RETURN") 
+		{
+			std::vector<std::string> args;
+			std::string temp = lineData[1].substr(0, lineData[1].find("->"));
+			std::string data = lineData[1];
+			bool FoundFunc = false;
+			size_t pos = data.find("->(");
+			if (pos != std::string::npos) {
+				data = data.substr(pos + 3); // Extract substring after "->("
+				data.erase(std::remove(data.begin(), data.end(), ')'), data.end()); // Remove closing ')'
+			}
+			std::stringstream ss2(data);
+			while (std::getline(ss2, arg, '+')) {
+				// Trim whitespace around the argument
+				arg.erase(arg.find_last_not_of(" \t\n") + 1);
+				arg.erase(0, arg.find_first_not_of(" \t\n")); // Trim leading whitespace
+				if (arg.size() > 1 && 
+					((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''))) {
+					arg = arg.substr(1, arg.size() - 2); // Strip outer quotes
+				}
+				if (arg.size() >= 2 && arg[arg.size() - 2] == '\\' && arg[arg.size() - 1] == 'n') {
+					arg.erase(arg.size() - 2);  // Remove the last two characters
+				}
+				change_line(arg);
+				args.push_back(arg); 
+			}
+			if (functions.count(temp) != 0)
+			{
+				returnValue = RunScriptFunction(temp, args);
+				FoundFunc = true;
+			}
+			if (funcNames.count(temp) != 0)
+			{
+				ReturnType result = funcNames[temp](args);
+				if (std::holds_alternative<std::string>(result))
+				{
+					returnValue = std::get<std::string>(result);
+				}
+				else
+				{
+					returnValue = "";
+				}
+				returnValue = removeWhitespace(returnValue, false);
+				FoundFunc = true;
+			}
+			if (outerFunctions.count(temp) != 0)
+			{
+				ReturnType result = outerFunctions[temp](args);
+				if (std::holds_alternative<std::string>(result))
+				{
+					returnValue = std::get<std::string>(result);
+				}
+				else
+				{
+					returnValue = "";
+				}
+				returnValue = removeWhitespace(returnValue, false);
+				FoundFunc = true;
+			}
+			if (FoundFunc)
+			{
+				continue;
+			}
+			returnValue = lineData[1];
 		}
 		else if (lineData[0] == "LOADSLIB") {
 			std::string libPath = std::filesystem::current_path().string() + "/" + lineData[1] + ".sbcc";
@@ -481,12 +568,15 @@ void VM::Compile(std::string customData, std::string moduleName)
 			}
 			if (functions.count(temp) != 0)
 			{
-				RunScriptFunction(temp, args);
-				var_names[lineData[1]] = "";
+				var_names[lineData[1]] = RunScriptFunction(temp, args);
 			}
 			else
 			{
 				var_names[lineData[1]] = lineData[2];
+			}
+			if (!moduleName.empty())
+			{
+				var_module_names[lineData[1]] = var_names[lineData[1]];
 			}
 		}
 		else if (lineData[0] == "RUNANDDEFVAR")
@@ -524,10 +614,9 @@ void VM::Compile(std::string customData, std::string moduleName)
 					}
 				}
 			}
-			if (functions.count(lineData[1]) != 0)
+			if (functions.count(lineData[2]) != 0)
 			{
-				RunScriptFunction(lineData[2], args);
-				var_names[lineData[1]] = "";
+				var_names[lineData[1]] = RunScriptFunction(lineData[2], args);
 			}
 			for (const auto& [func_Name, func] : funcNames)
 			{
@@ -554,6 +643,10 @@ void VM::Compile(std::string customData, std::string moduleName)
 					returnVal = removeWhitespace(returnVal, false);
 					var_names[lineData[1]] = returnVal;
 				}
+			}
+			if (!moduleName.empty())
+			{
+				var_module_names[lineData[1]] = var_names[lineData[1]];
 			}
 		}
 		else if (lineData[0] == "LOADLIB")

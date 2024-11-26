@@ -196,8 +196,14 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
         processFunctionCall(match);
     }
     // return statement
-    else if (std::regex_match(line, match, std::regex(R"(return\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*)"))) {
-        currentBytecodeFile << "RETURN," << std::string(match[1]) << std::endl;
+    else if (std::regex_match(line, match, std::regex(R"(return\s+(.+)\s*)"))) {
+        size_t pos = 0;
+        std::string str = match[1].str();
+        while ((pos = str.find(",", pos)) != std::string::npos) {
+            str.replace(pos, 2, "+");
+            pos += 1; // Move past the replacement
+        }
+        currentBytecodeFile << "RETURN," << str << std::endl;
     }
     // If statement
     else if (std::regex_match(line, match, std::regex(R"(if\s+(.+?)\s*[^->](==|~=|>=|>|<=|<)\s*(.+?)\s*then)"))) {

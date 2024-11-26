@@ -32,6 +32,7 @@ end!
 func! argFunc(arg1, arg2)
     print->(arg1, arg2)
     myFunc->()
+    return "hi!"
 end!
 
 /*
