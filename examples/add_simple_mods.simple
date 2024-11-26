@@ -10,7 +10,7 @@ add! functions
 func! my2ndFunc()
     print->("My cool 2nd function")
 end!
-
+print->("OKOK", "OK2OK2OK", "OK3OK", "OK")
 functions.argFunc->("NO1", "NO2")
 my2ndFunc->()
 functions.myTestFunc->()

@@ -430,55 +430,57 @@ void VM::Compile(std::string customData, std::string moduleName)
 			lineData[2].erase(std::remove(lineData[2].begin(), lineData[2].end(), '\"'), lineData[2].end());
 			std::vector<std::string> args;
 			std::string temp = lineData[2].substr(0, lineData[2].find("->"));
+			std::string data = lineData[2];
+			size_t pos = data.find("->(");
+			if (pos != std::string::npos) {
+				data = data.substr(pos + 3); // Extract substring after "->("
+				data.erase(std::remove(data.begin(), data.end(), ')'), data.end()); // Remove closing ')'
+			}
+			std::stringstream ss2(data);
+			while (std::getline(ss2, arg, '+')) {
+				// Trim whitespace around the argument
+				arg.erase(arg.find_last_not_of(" \t\n") + 1);
+				arg.erase(0, arg.find_first_not_of(" \t\n")); // Trim leading whitespace
+				if (arg.size() > 1 && 
+					((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''))) {
+					arg = arg.substr(1, arg.size() - 2); // Strip outer quotes
+				}
+				if (arg.size() >= 2 && arg[arg.size() - 2] == '\\' && arg[arg.size() - 1] == 'n') {
+					arg.erase(arg.size() - 2);  // Remove the last two characters
+				}
+				change_line(arg);
+				args.push_back(arg); 
+			}
+			if (lineData.size() > 0)
+			{
+				for (size_t i = 2; i < lineData.size(); i++)
+				{
+					if (((lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
+					{
+						continue;
+					}
+					if (lineData[i] == "EOF")
+					{
+						continue;
+					}
+					std::string backUpVar = lineData[i];
+					if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+					}
+					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+						for (const auto& var : var_names)
+						{
+							if (var.first == lineData[i]) {
+                                args.push_back(var.second);  // Use the stored value if found
+                            }
+						}
+					} else {
+						args.push_back(backUpVar);  // Use the original string if not found
+					}
+				}
+			}
 			if (functions.count(temp) != 0)
 			{
-				std::string data = lineData[2];
-				std::vector<std::string> args;
-				size_t pos = data.find("->(");
-				if (pos != std::string::npos) {
-					data = data.substr(pos + 3); // Extract substring after "->("
-					data.erase(std::remove(data.begin(), data.end(), ')'), data.end()); // Remove closing ')'
-				}
-				std::stringstream ss2(data);
-				while (std::getline(ss2, arg, '+')) {
-					// Trim whitespace around the argument
-					arg.erase(arg.find_last_not_of(" \t\n") + 1);
-					arg.erase(0, arg.find_first_not_of(" \t\n")); // Trim leading whitespace
-
-					if (arg.size() > 1 && 
-						((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''))) {
-						arg = arg.substr(1, arg.size() - 2); // Strip outer quotes
-					}
-					if (arg.size() >= 2 && arg[arg.size() - 2] == '\\' && arg[arg.size() - 1] == 'n') {
-						arg.erase(arg.size() - 2);  // Remove the last two characters
-					}
-					change_line(arg);
-					args.push_back(arg); 
-				}
-				if (lineData.size() > 0)
-				{
-					for (size_t i = 2; i < lineData.size(); i++)
-					{
-						if (((lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
-						{
-							continue;
-						}
-						std::string backUpVar = lineData[i];
-						if (lineData[i].front() == '"' && lineData[i].back() == '"') {
-							lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
-						}
-						if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
-							for (const auto& var : var_names)
-							{
-								if (var.first == lineData[i]) {
-                                    args.push_back(var.second);  // Use the stored value if found
-                                }
-							}
-						} else {
-							args.push_back(backUpVar);  // Use the original string if not found
-						}
-					}
-				}
 				RunScriptFunction(temp, args);
 				var_names[lineData[1]] = "";
 			}
@@ -494,33 +496,36 @@ void VM::Compile(std::string customData, std::string moduleName)
 				lineData[1] = moduleName + "." + lineData[1];
 			}
 			std::vector<std::string> args;
-			if (functions.count(lineData[1]) != 0)
+			if (lineData.size() > 0)
 			{
-				std::vector<std::string> args;
-				if (lineData.size() > 0)
+				for (size_t i = 2; i < lineData.size(); i++)
 				{
-					for (size_t i = 2; i < lineData.size(); i++)
+					if (((lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
 					{
-						if (((lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
+						continue;
+					}
+					if (lineData[i] == "EOF")
+					{
+						continue;
+					}
+					std::string backUpVar = lineData[i];
+					if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+					}
+					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+						for (const auto& var : var_names)
 						{
-							continue;
+							if (var.first == lineData[i]) {
+                                args.push_back(var.second);  // Use the stored value if found
+                            }
 						}
-						std::string backUpVar = lineData[i];
-						if (lineData[i].front() == '"' && lineData[i].back() == '"') {
-							lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
-						}
-						if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
-							for (const auto& var : var_names)
-							{
-								if (var.first == lineData[i]) {
-                                    args.push_back(var.second);  // Use the stored value if found
-                                }
-							}
-						} else {
-							args.push_back(backUpVar);  // Use the original string if not found
-						}
+					} else {
+						args.push_back(backUpVar);  // Use the original string if not found
 					}
 				}
+			}
+			if (functions.count(lineData[1]) != 0)
+			{
 				RunScriptFunction(lineData[2], args);
 				var_names[lineData[1]] = "";
 			}
@@ -528,68 +533,19 @@ void VM::Compile(std::string customData, std::string moduleName)
 			{
 				if (func_Name == lineData[2])
 				{
-					if (lineData.size() > 0)
-					{
-						for (size_t i = 2; i < lineData.size(); i++)
-						{
-							if ((lineData[i] == func_Name || (lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
-							{
-								continue;
-							}
-							std::string backUpVar = lineData[i];
-							if (lineData[i].front() == '"' && lineData[i].back() == '"') {
-								lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
-							}
-							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
-								for (const auto& var : var_names)
-								{
-									if (var.first == lineData[i]) {
-                                        args.push_back(var.second);  // Use the stored value if found
-                                    }
-								}
-							} else {
-								args.push_back(backUpVar);  // Use the original string if not found
-							}
-						}
-						ReturnType result = func(args);
-						std::string returnVal = "";
-						if (std::holds_alternative<std::string>(result)) {
-							returnVal = std::get<std::string>(result);
-						}
-						returnVal = removeWhitespace(returnVal, false);
-						var_names[lineData[1]] = returnVal;
+					ReturnType result = func(args);
+					std::string returnVal = "";
+					if (std::holds_alternative<std::string>(result)) {
+						returnVal = std::get<std::string>(result);
 					}
+					returnVal = removeWhitespace(returnVal, false);
+					var_names[lineData[1]] = returnVal;
 				}
 			}
 			for (const auto& [func_name, func] : outerFunctions)
 			{
 				if (func_name == lineData[2])
 				{
-					std::vector<std::string> args;
-					if (lineData.size() > 0)
-					{
-						for (size_t i = 2; i < lineData.size(); i++)
-						{
-							if ((lineData[i] == func_name || (lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
-							{
-								continue;
-							}
-							std::string backUpVar = lineData[i];
-							if (lineData[i].front() == '"' && lineData[i].back() == '"') {
-								lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
-							}
-							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
-								for (const auto& var : var_names)
-								{
-									if (var.first == lineData[i]) {
-                                        args.push_back(var.second);  // Use the stored value if found
-                                    }
-								}
-							} else {
-								args.push_back(backUpVar);  // Use the original string if not found
-							}
-						}
-					}
 					ReturnType result = func(args);
 					std::string returnVal = "";
 					if (std::holds_alternative<std::string>(result)) {
@@ -607,97 +563,49 @@ void VM::Compile(std::string customData, std::string moduleName)
 		else if (lineData[0] == "RUNFUNC")
 		{
 			std::vector<std::string> args;
-			if (functions.count(lineData[1]) != 0)
+			if (lineData.size() > 0)
 			{
-				std::vector<std::string> args;
-				if (lineData.size() > 0)
+				for (size_t i = 2; i < lineData.size(); i++)
 				{
-					for (size_t i = 2; i < lineData.size(); i++)
+					if (((lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
 					{
-						if (lineData[i] == "EOF")
+						continue;
+					}
+					if (lineData[i] == "EOF")
+					{
+						continue;
+					}
+					std::string backUpVar = lineData[i];
+					if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
+					}
+					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+						for (const auto& var : var_names)
 						{
-							continue;
+							if (var.first == lineData[i]) {
+                                args.push_back(var.second);  // Use the stored value if found
+                            }
 						}
-						std::string backUpVar = lineData[i];
-						if (lineData[i].front() == '"' && lineData[i].back() == '"') {
-							lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
-						}
-						if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
-							for (const auto& var : var_names)
-							{
-								if (var.first == lineData[i]) {
-                                    args.push_back(var.second);  // Use the stored value if found
-                                }
-							}
-						} else {
-							args.push_back(backUpVar);  // Use the original string if not found
-						}
+					} else {
+						args.push_back(backUpVar);  // Use the original string if not found
 					}
 				}
+			}
+			if (functions.count(lineData[1]) != 0)
+			{
 				RunScriptFunction(lineData[1], args);
 			}
 			for (const auto& [func_Name, func] : funcNames)
 			{
 				if (func_Name == lineData[1])
 				{
-					if (lineData.size() > 0)
-					{
-						for (size_t i = 1; i < lineData.size(); i++)
-						{
-							if (lineData[i] == func_Name || lineData[i] == "EOF")
-							{
-								continue;
-							}
-							std::string backUpVar = lineData[i];
-							if (lineData[i].front() == '"' && lineData[i].back() == '"') {
-								lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
-							}
-
-							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
-								for (const auto& var : var_names)
-								{
-									if (var.first == lineData[i]) {
-                                        args.push_back(var.second);  // Use the stored value if found
-                                    }
-								}
-							} else {
-								args.push_back(backUpVar);  // Use the original string if not found
-							}
-						}
-						func(args);
-					}
+					func(args);
 				}
 			}
 			for (const auto& [func_name, func] : outerFunctions)
 			{
 				if (func_name == lineData[1])
 				{
-					std::vector<std::string> args;
-					if (lineData.size() > 0)
-					{
-						for (size_t i = 1; i < lineData.size(); i++)
-						{
-							if (lineData[i] == func_name || lineData[i] == "EOF")
-							{
-								continue;
-							}
-							std::string backUpVar = lineData[i];
-							if (lineData[i].front() == '"' && lineData[i].back() == '"') {
-								lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
-							}
-
-							if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
-								for (const auto& var : var_names)
-								{
-									if (var.first == lineData[i]) {
-                                        args.push_back(var.second);  // Use the stored value if found
-                                    }
-								}
-							} else {
-								args.push_back(backUpVar);  // Use the original string if not found
-							}
-						}
-					}
 					func(args);
 				}
 			}
