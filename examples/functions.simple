@@ -27,12 +27,14 @@ func! myFunc()
     else
         print->("donze nothing!")
     end
+    return "blbo"
 end!
 
 func! argFunc(arg1, arg2)
     print->(arg1, arg2)
-    myFunc->()
-    return "hi!"
+    global myBlbobasdojsa = myFunc->()
+    print->(myBlbobasdojsa)
+    return myBlbobasdojsa
 end!
 
 /*

@@ -435,6 +435,11 @@ void VM::Compile(std::string customData, std::string moduleName)
 				returnValue = removeWhitespace(returnValue, false);
 				FoundFunc = true;
 			}
+			if (var_names.count(lineData[1]) != 0)
+			{
+				returnValue = var_names[lineData[1]];
+				FoundFunc = true;
+			}
 			if (FoundFunc)
 			{
 				continue;
