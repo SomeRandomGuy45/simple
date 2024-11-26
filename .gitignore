@@ -414,4 +414,5 @@ simple/single_include/*
 *.lib
 *.o
 *.exe
+*.sbcc
 obj_loader
