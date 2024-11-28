@@ -12,6 +12,8 @@ func! my2ndFunc()
     //functions.myFunc->()
     return functions.argFunc->("balls", "sdfjsd")
 end!
+global rValu1 = functions.myTestFunc->()
+print->(rValu1)
 print->("OKOK", "OK2OK2OK", "OK3OK", "OK")
 functions.argFunc->("NO1", "NO2")
 global returnVal = my2ndFunc->()

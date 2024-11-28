@@ -10,7 +10,7 @@ add! variable
 global myVar = "Hello world!"
 
 func! myTestFunc()
-    variable.my2ndFunc->()
+    return variable.myCoolStringTest
 end!
 
 func! myFunc()
