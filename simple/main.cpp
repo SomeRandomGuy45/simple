@@ -308,21 +308,21 @@ int main(int argc, char** argv) {
 
         if (newLine.empty()) continue;
         
-        if (newLine == "exit()" || newLine == "quit()" || newLine == "^D") {
+        if ( newLine == "quit->()" || newLine == "^D") {
             break;
         }
 
-        if (newLine == "clear()") {
+        if (newLine == "clear->()") {
             std::cout << "\033[2J\033[1;1H";
             std::cout << "Simple " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
         }
 
         if (newLine == "clear") {
-            std::cout << "[HINT] Use clear() to clear the terminal.\n";
+            std::cout << "[HINT] Use clear->() to clear the terminal.\n";
         }
 
         if (newLine == "exit" || newLine == ":q" || newLine == "quit") {
-            std::cout << "[HINT] Use exit(), quit() or CTRL+D (EOF) to exit the program.\n";
+            std::cout << "[HINT] Use exit->(), quit->() or CTRL+D (EOF) to exit the program.\n";
         }
 
         outputFile << newLine << std::endl;

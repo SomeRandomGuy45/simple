@@ -127,53 +127,38 @@ std::variant<std::string, std::nullptr_t> VM::RunFuncWithArgs(std::vector<std::s
 	{
 		arg.erase(std::remove(arg.begin(), arg.end(), '\"'), arg.end());
 	}
-	for (const auto& [func_Name, func] : funcNames)
-	{
-		if (func_Name == lineData)
+	if (args.size() > 0)
 		{
-			isFunc = true;
-			if (args.size() > 0)
+		for (size_t i = 0; i < args.size(); i++)
+		{
+			if (var_names.count(args[i]) != 0)
 			{
-				for (size_t i = 0; i < args.size(); i++)
-				{
-					if (var_names.count(args[i]) != 0)
-					{
-						args[i] = var_names[args[i]];
-					}
-				}
-			}
-			ReturnType result = func(args);
-			if (std::holds_alternative<std::string>(result)) {
-				return std::get<std::string>(result);
-			}
-			else
-			{
-				return "";
+				args[i] = var_names[args[i]];
 			}
 		}
 	}
-	for (const auto& [func_name, func] : outerFunctions)
+	if (funcNames.count(lineData) != 0)
 	{
-		if (args.size() > 0)
-		{
-			for (size_t i = 0; i < args.size(); i++)
-			{
-				if (var_names.count(args[i]) != 0)
-				{
-					args[i] = var_names[args[i]];
-				}
-			}
+		isFunc = true;
+		ReturnType result = funcNames[lineData](args);
+		if (std::holds_alternative<std::string>(result)) {
+			return std::get<std::string>(result);
 		}
-		if (func_name == lineData)
+		else
 		{
-			ReturnType result = func(args);
-			if (std::holds_alternative<std::string>(result)) {
-				return std::get<std::string>(result);
-			}
-			else
-			{
-				return "";
-			}
+			return "";
+		}
+	}
+	else if (outerFunctions.count(lineData) != 0)
+	{
+		isFunc = true;
+		ReturnType result = outerFunctions[lineData](args);
+		if (std::holds_alternative<std::string>(result)) {
+			return std::get<std::string>(result);
+		}
+		else
+		{
+			return "";
 		}
 	}
 	return nullptr;
@@ -556,7 +541,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 						continue;
 					}
 					std::string backUpVar = lineData[i];
-					if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+					if ((lineData[i].front() == '"' && lineData[i].back() == '"') || (lineData[i].front() == '\'' && lineData[i].back() == '\'')) {
 						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
 					}
 					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
@@ -577,7 +562,8 @@ void VM::Compile(std::string customData, std::string moduleName)
 			}
 			else
 			{
-				var_names[lineData[1]] = lineData[2];
+				std::string var_data = var_names.count(lineData[2]) != 0 ? var_names[lineData[2]] : lineData[2];
+				var_names[lineData[1]] = var_data;
 			}
 			if (!moduleName.empty())
 			{
@@ -604,7 +590,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 						continue;
 					}
 					std::string backUpVar = lineData[i];
-					if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+					if ((lineData[i].front() == '"' && lineData[i].back() == '"') || (lineData[i].front() == '\'' && lineData[i].back() == '\'')) {
 						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
 					}
 					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
@@ -623,31 +609,25 @@ void VM::Compile(std::string customData, std::string moduleName)
 			{
 				var_names[lineData[1]] = RunScriptFunction(lineData[2], args);
 			}
-			for (const auto& [func_Name, func] : funcNames)
+			if (funcNames.count(lineData[2]) != 0)
 			{
-				if (func_Name == lineData[2])
-				{
-					ReturnType result = func(args);
-					std::string returnVal = "";
-					if (std::holds_alternative<std::string>(result)) {
-						returnVal = std::get<std::string>(result);
-					}
-					returnVal = removeWhitespace(returnVal, false);
-					var_names[lineData[1]] = returnVal;
+				ReturnType result = funcNames[lineData[2]](args);
+				std::string returnVal = "";
+				if (std::holds_alternative<std::string>(result)) {
+					returnVal = std::get<std::string>(result);
 				}
+				returnVal = removeWhitespace(returnVal, false);
+				var_names[lineData[1]] = returnVal;
 			}
-			for (const auto& [func_name, func] : outerFunctions)
+			if (outerFunctions.count(lineData[2]))
 			{
-				if (func_name == lineData[2])
-				{
-					ReturnType result = func(args);
-					std::string returnVal = "";
-					if (std::holds_alternative<std::string>(result)) {
-						returnVal = std::get<std::string>(result);
-					}
-					returnVal = removeWhitespace(returnVal, false);
-					var_names[lineData[1]] = returnVal;
+				ReturnType result = outerFunctions[lineData[2]](args);
+				std::string returnVal = "";
+				if (std::holds_alternative<std::string>(result)) {
+					returnVal = std::get<std::string>(result);
 				}
+				returnVal = removeWhitespace(returnVal, false);
+				var_names[lineData[1]] = returnVal;
 			}
 			if (!moduleName.empty())
 			{
@@ -674,7 +654,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 						continue;
 					}
 					std::string backUpVar = lineData[i];
-					if (lineData[i].front() == '"' && lineData[i].back() == '"') {
+					if ((lineData[i].front() == '"' && lineData[i].back() == '"') || (lineData[i].front() == '\'' && lineData[i].back() == '\'')) {
 						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
 					}
 					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
@@ -693,19 +673,13 @@ void VM::Compile(std::string customData, std::string moduleName)
 			{
 				RunScriptFunction(lineData[1], args);
 			}
-			for (const auto& [func_Name, func] : funcNames)
+			if (funcNames.count(lineData[1]) != 0)
 			{
-				if (func_Name == lineData[1])
-				{
-					func(args);
-				}
+				funcNames[lineData[1]](args);
 			}
-			for (const auto& [func_name, func] : outerFunctions)
+			if (outerFunctions.count(lineData[1]) != 0)
 			{
-				if (func_name == lineData[1])
-				{
-					func(args);
-				}
+				outerFunctions[lineData[1]](args);
 			}
 		}
 	}
