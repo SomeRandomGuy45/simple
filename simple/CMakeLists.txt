@@ -40,6 +40,10 @@ set_target_properties(simple PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist
 )
 
+if (LINUX)
+    target_link_options(simple PRIVATE "-Wl,-rpath,'$ORIGIN'")
+endif()
+
 if (APPLE)
 add_custom_command(TARGET simple POST_BUILD
     COMMAND install_name_tool -change @rpath/libsimple_main.dylib @executable_path/libsimple_main.dylib
