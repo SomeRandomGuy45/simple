@@ -227,7 +227,14 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     }
     else if (line.substr(0, 4) == "add!") {
         currentBytecodeFile << "LOADSLIB," + line.substr(5) << std::endl;
-        Token* token = new Token(std::filesystem::current_path().string() + "/" + line.substr(5) + ".simple", line.substr(5), true);
+        std::string path = std::filesystem::current_path().string() + "/" + line.substr(5) + ".simple";
+        for (const auto& file : std::filesystem::recursive_directory_iterator(std::filesystem::current_path())) {
+            if (!file.is_directory() && file.path().filename() == line.substr(5) + ".simple") {
+                path = file.path().string();
+                break;
+            }
+        }
+        Token* token = new Token(path, line.substr(5), true);
         token->StartReadingFile();
         delete token;
     }
@@ -278,7 +285,7 @@ void Token::handleFunctionDefinition(const std::string& line, bool& trapInFuncti
 
 void Token::handleLibraryAddition(const std::string& line, int64_t currentLine) {
     std::string libName = LIBPATH + line.substr(4) + LIB_EXT;
-    if (!std::filesystem::exists(libName)) {
+    if (std::filesystem::exists(libName)) {
         std::cerr << "[TOKEN-PARSER] Couldn't find library: " + line.substr(4) + ". Line: " + line + ". Line index is " + std::to_string(currentLine) << ". Trying access lib: " << libName << "\n";
         throw std::runtime_error("Failed to run script!");
     }

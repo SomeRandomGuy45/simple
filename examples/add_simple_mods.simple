@@ -6,10 +6,10 @@
 */
 
 add! functions
+add! maybe
 
 func! my2ndFunc()
     print->("My cool 2nd function")
-    //functions.myFunc->()
     return functions.argFunc->("balls", "sdfjsd")
 end!
 global rValu1 = functions.myTestFunc->()
@@ -21,3 +21,4 @@ print->(returnVal)
 functions.myTestFunc->()
 print->(variable.myCoolStringTest)
 print->(functions.myVar)
+print->(maybe.myCoolVar)
