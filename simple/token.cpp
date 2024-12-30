@@ -289,6 +289,7 @@ void Token::handleLibraryAddition(const std::string& line, int64_t currentLine) 
         std::cerr << "[TOKEN-PARSER] Couldn't find library: " + line.substr(4) + ". Line: " + line + ". Line index is " + std::to_string(currentLine) << ". Trying access lib: " << libName << "\n";
         throw std::runtime_error("Failed to run script!");
     }
+    libName = expandHomeDirectory(libName);
     currentBytecodeFile << "LOADLIB," + libName << std::endl;
 }
 

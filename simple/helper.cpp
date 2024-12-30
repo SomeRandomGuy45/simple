@@ -74,6 +74,19 @@ std::string getRandomFileName() {
     return ss;
 }
 
+std::string expandHomeDirectory(const std::string& path) {
+    if (!path.empty() && path[0] == '~') {
+        const char* home = getenv("HOME");
+        if (home) {
+            return std::string(home) + path.substr(1);
+        } else {
+            std::cerr << "Error: HOME environment variable not set." << std::endl;
+            return path; // Return the original path as a fallback
+        }
+    }
+    return path; // Return unchanged if not starting with '~'
+}
+
 #ifdef __cplusplus
 }
 #endif

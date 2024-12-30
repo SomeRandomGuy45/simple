@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <thread>
 #include <memory>
+#include <cstdlib>
 #include "base_func.h"
 
 //some helper varibles
@@ -34,7 +35,7 @@
 #define OS "WIN"
 #else
 #include <dlfcn.h>
-#define LIBPATH "/usr/local/lib/simple_libs/lib"
+#define LIBPATH "~/simple_libs/lib"
 #ifdef __APPLE__
     #define LIB_EXT ".dylib"
     #define OS "APPLE"
@@ -93,6 +94,7 @@ extern "C" {
 
 std::string removeWhitespace(std::string str, bool NO_SPACE);
 std::string getRandomFileName();
+std::string expandHomeDirectory(const std::string& path);
 
 #ifdef __cplusplus
 }
