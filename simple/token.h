@@ -38,6 +38,7 @@ private:
 
     bool shouldKill = false;
     bool inString = false;
+    bool isInWhileLoop = false;
 
     // Private helper methods can be declared here
     void processScriptLines(); // Process each line from the script

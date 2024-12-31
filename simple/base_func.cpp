@@ -42,11 +42,15 @@ ReturnType print(std::vector<std::string> args)
 
 ReturnType add(std::vector<std::string> args)
 {
-    size_t finalNum = 0;
-    for (const auto& val : args)
+    if (args.size() < 2)
+    {
+        return "Error: Invalid number of arguments";
+    }
+    size_t finalNum = std::stoull(args[0]);
+    for (size_t i = 1; i < args.size(); ++i)
     {
         try {
-            finalNum += std::stoull(val);
+            finalNum += std::stoull(args[i]);
         } catch (...) {};
     }
     return std::to_string(finalNum);
@@ -54,11 +58,15 @@ ReturnType add(std::vector<std::string> args)
 
 ReturnType sub(std::vector<std::string> args)
 {
-    size_t finalNum = 0;
-    for (const auto& val : args)
+    if (args.size() < 2)
+    {
+        return "Error: Invalid number of arguments";
+    }
+    size_t finalNum = std::stoull(args[0]);
+    for (size_t i = 1; i < args.size(); ++i)
     {
         try {
-            finalNum -= std::stoull(val);
+            finalNum -= std::stoull(args[i]);
         } catch (...) {};
     }
     return std::to_string(finalNum);
@@ -66,11 +74,15 @@ ReturnType sub(std::vector<std::string> args)
 
 ReturnType multi(std::vector<std::string> args)
 {
-    size_t finalNum = 1;
-    for (const auto& val : args)
+    if (args.size() < 2)
+    {
+        return "Error: Invalid number of arguments";
+    }
+    size_t finalNum = std::stoull(args[0]);
+    for (size_t i = 1; i < args.size(); ++i)
     {
         try {
-            finalNum *= std::stoull(val);
+            finalNum *= std::stoull(args[i]);
         } catch (...) {};
     }
     return std::to_string(finalNum);
@@ -78,11 +90,15 @@ ReturnType multi(std::vector<std::string> args)
 
 ReturnType divi(std::vector<std::string> args)
 {
-    size_t finalNum = 1;
-    for (const auto& val : args)
+    if (args.size() < 2)
+    {
+        return "Error: Invalid number of arguments";
+    }
+    size_t finalNum = std::stoull(args[0]);
+    for (size_t i = 1; i < args.size(); ++i)
     {
         try {
-            finalNum /= std::stoull(val);
+            finalNum /= std::stoull(args[i]);
         } catch (...) {};
     }
     return std::to_string(finalNum);

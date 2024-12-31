@@ -5,6 +5,7 @@
 
 #include <variant>
 #include <algorithm>
+#include <tuple>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +22,6 @@ public:
 	VM(std::string src);
 
 	void DoLogic(VM* v);
-	std::string RunScriptFunction(std::string func_name, std::vector<std::string> args);
 	void changeFilePath(std::string src);
 	void Compile(std::string customData = "", std::string moduleName = "");
 	void AddVariable(std::string name, std::string value);
@@ -29,6 +29,9 @@ public:
 	void AddFunction(std::string func_name, std::string func_value);
 	void AddFunctionArgs(std::string func_name, std::string func_args);
 	void RemoveFunction(std::string func_name);
+	std::variant<double, std::nullptr_t> evaluateExpression(const std::string& expr);
+	std::string RunScriptFunction(std::string func_name, std::vector<std::string> args);
+	std::vector<std::string> DoStringLogic(const std::string& line1, const std::string& line2);
 	
 	std::string returnValue;
 	
@@ -49,6 +52,8 @@ private:
 	std::string filePath;
 	std::string currentLine;
 	std::vector<std::string> scriptLines;
+	std::unordered_map<int, std::string> whileLoops;
+	std::unordered_map<int, std::tuple<std::string, std::string, std::string>> whileLoops_args;
 
 	uint64_t totalRAM = getTotalRAM();
 };

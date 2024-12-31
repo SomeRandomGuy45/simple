@@ -1,0 +1,24 @@
+func! hi()
+    global i = 1
+    while true == true do
+        i++
+        if i >= 5 then
+            print->("break!")
+            break
+        end
+    end!
+end!
+
+func! fib(x)
+    if 3 > x then
+        return 1
+    else
+        global end_1 = fib->(x - 1)
+        global end_2 = fib->(x - 2)
+        return end_1 + end_2
+    end
+end!
+
+hi->()
+global a = fib->(5)
+print->(a)

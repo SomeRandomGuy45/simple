@@ -158,6 +158,10 @@ void Token::processScriptLines() {
             currentBytecodeFile << "DOFUNCCALL,";
         }
 
+        if (isInWhileLoop) {
+            currentBytecodeFile << "WHILELOOPCALL,";
+        }
+
         handleLine(line, currentLine, trapInFunction);
     }
 
@@ -205,6 +209,9 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
         }
         currentBytecodeFile << "RETURN," << str << std::endl;
     }
+    else if (std::regex_match(line, match, std::regex(R"((.+)(\+\+|--)\s*)"))) {
+        currentBytecodeFile << "INC," << match[1].str() << "," << match[2].str() << std::endl;
+    }
     // If statement
     else if (std::regex_match(line, match, std::regex(R"(if\s+(.+?)\s*[^->](==|~=|>=|>|<=|<)\s*(.+?)\s*then)"))) {
         currentBytecodeFile << "IFOP," << std::string(match[1]) << "," << std::string(match[2]) << "," << std::string(match[3]) << std::endl;
@@ -215,6 +222,13 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     }
     else if (line.substr(0,4) == "else") {
         currentBytecodeFile << "ELSE" << std::endl;
+    }
+    else if (line.substr(0, 6) == "break") {
+        currentBytecodeFile << "BREAK" << std::endl;
+    }
+    else if (std::regex_match(line, match, std::regex(R"(while\s+(.+?)\s*[^->](==|~=|>=|>|<=|<)\s*(.+?)\s*do)"))) {
+        currentBytecodeFile << "WHILE," << std::string(match[1]) << "," << std::string(match[2]) << "," << std::string(match[3]) << std::endl;
+        isInWhileLoop = true;
     }
     // Other cases...
     else if (line.substr(0, 7) == "!define") {
@@ -243,7 +257,11 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     }
     else if (line.substr(0, 3) == "end") {
         if (line.substr(0, 4) == "end!") {
-            trapInFunction = false;
+            if (isInWhileLoop) {
+                isInWhileLoop = false;
+            } else {
+                trapInFunction = false;
+            }
             currentBytecodeFile << "ENDFUNC" << std::endl;
             return;
         }

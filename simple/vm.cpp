@@ -1,8 +1,11 @@
 #include "vm.h"
+#include "include-mu/muParser.h"
 
 std::unordered_map<std::string, std::string> functions_module;
 std::unordered_map<std::string, std::string> functions_module_args;
 std::unordered_map<std::string, std::string> var_module_names;
+
+bool breakCurrentLoop = false;
 
 std::vector<std::string> split(const std::string& str, char delimiter) {
     std::vector<std::string> result;
@@ -28,6 +31,66 @@ void change_line(std::string& str) {
     }
 }
 
+std::vector<std::string> VM::DoStringLogic(const std::string& line1, const std::string& line2)
+{
+	std::string op1 = removeWhitespace(line1, false);
+	std::string op2 = removeWhitespace(line2, false);
+	bool op1_is_func = false;
+	bool op2_is_func = false;
+
+	try {
+		std::string op3 = op1.substr(0,op1.find("->("));
+		std::vector<std::string> args1; // Vector to store arguments
+		size_t start = op1.find("->(") + 3; // Skip "->("
+		size_t end = op1.find(")", start); // Find closing parenthesis
+		if (start != std::string::npos && end != std::string::npos) {
+			std::string arg = op1.substr(start, end - start);
+			std::stringstream ss(arg);
+			while (std::getline(ss, arg, ',')) {
+				// Trim whitespace around the argument
+				arg.erase(0, arg.find_first_not_of(" \t\n"));
+				arg.erase(arg.find_last_not_of(" \t\n") + 1);
+				if (!arg.empty()) {
+					args1.push_back(arg); // Add non-empty argument to the vector
+				}
+			}
+		}
+		std::string op4 = op2.substr(0,op2.find("->("));
+		std::vector<std::string> args2; // Vector to store arguments
+		start = op2.find("->(") + 3; // Skip "->("
+		end = op2.find(")", start); // Find closing parenthesis
+		if (start != std::string::npos && end != std::string::npos) {
+			std::string arg = op2.substr(start, end - start);
+			std::stringstream ss_2(arg);
+			while (std::getline(ss_2, arg, ',')) {
+				// Trim whitespace around the argument
+				arg.erase(0, arg.find_first_not_of(" \t\n"));
+				arg.erase(arg.find_last_not_of(" \t\n") + 1);
+				if (!arg.empty()) {
+					args2.push_back(arg); // Add non-empty argument to the vector
+				}
+			}
+		}
+		std::variant<std::string, std::nullptr_t> value_1 = RunFuncWithArgs(args1, op3, op1_is_func);
+		std::variant<std::string, std::nullptr_t> value_2 = RunFuncWithArgs(args2, op4, op2_is_func);
+		if (std::holds_alternative<std::string>(value_1))
+		{
+			op1 = std::get<std::string>(value_1);
+		}
+		if (std::holds_alternative<std::string>(value_2))
+		{
+			op2 = std::get<std::string>(value_2);
+		}
+	} catch (...) {
+		// add something here later idc
+	}	
+
+	// Replace with actual variable values if they exist and its not a function
+	op1 = (var_names.count(op1) != 0 && op1_is_func == false) ? var_names[op1] : op1;
+	op2 = (var_names.count(op2) != 0 && op2_is_func == false) ? var_names[op2] : op2;
+	return {op1, op2};
+}
+
 void VM::DoLogic(VM* v)
 {
 	for (const auto& [key, value] : functions) {
@@ -46,11 +109,66 @@ void VM::DoLogic(VM* v)
 	for (const auto& [key, value] : var_module_names) {
 		v->AddVariable(key, value);
 	}
+	for (const auto& [key, value] : var_names) {
+		v->AddVariable(key, value);
+	}
 }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+std::string formatNumber(double value) {
+    std::ostringstream oss;
+    oss << value; // Convert number to string
+    std::string result = oss.str();
+
+    // Remove trailing zeros and the decimal point if unnecessary
+    if (result.find('.') != std::string::npos) {
+        // Erase trailing zeros
+        result.erase(result.find_last_not_of('0') + 1);
+
+        // If the last character is a decimal point, remove it
+        if (result.back() == '.') {
+            result.pop_back();
+        }
+    }
+
+    return result;
+}
+
+std::variant<double, std::nullptr_t> VM::evaluateExpression(const std::string& expr) {
+    mu::Parser parser;
+	std::unordered_map<std::string, double> variables;
+	for (const auto& [var, val_str] : var_names) {
+		if (expr == var) {
+			return nullptr;
+		}
+	}
+	try {
+		for (const auto& [var, val_str] : var_names) {
+            try {
+                double val = std::stod(val_str); // Convert string to double
+                variables[var] = val;
+                parser.DefineVar(var, &variables[var]); // Bind variable
+            } catch (const std::invalid_argument&) {
+                continue;
+            } catch (const std::out_of_range&) {
+				continue;
+            }
+        }
+		
+        // Set the expression
+        parser.SetExpr(expr);
+
+        // Evaluate the expression
+        double result = parser.Eval();
+
+        return result;
+    } catch (...) {
+        return nullptr;
+    }
+}
 
 VM::VM(std::string src)
 {
@@ -142,6 +260,8 @@ void VM::Compile(std::string customData, std::string moduleName)
 	bool stuckInComment = false;
 	bool skipStatment = false;
 	bool isElseif = false;
+	bool isWhileLoop = false;
+	int currentForLoop = 0;
 	std::string currentFunc = "";
 	if (customData.empty()) {
 		if (filePath.empty())
@@ -178,6 +298,12 @@ void VM::Compile(std::string customData, std::string moduleName)
 			if (arg.size() >= 2 && arg[arg.size() - 2] == '\\' && arg[arg.size() - 1] == 'n') {
 				arg.erase(arg.size() - 2);  // Remove the last two characters
 			}
+			std::variant<double, std::nullptr_t> val = evaluateExpression(arg);
+			if (std::holds_alternative<double>(val) and !isNumeric(arg)) {
+				//std::cout << std::get<double>(val) << " : " << arg << "\n";
+				lineData.push_back(formatNumber(std::get<double>(val)));
+				continue;
+			}
 			change_line(arg);
 			lineData.push_back(arg); 
 		}
@@ -199,86 +325,48 @@ void VM::Compile(std::string customData, std::string moduleName)
 		}
 		if (lineData[1] == "ENDFUNC")
 		{
-			if (functions[currentFunc].empty())
-			{
-				functions.erase(currentFunc);
-				functions_args.erase(currentFunc);
+			if (!currentFunc.empty()) {
+				if (functions[currentFunc].empty())
+				{
+					functions.erase(currentFunc);
+					functions_args.erase(currentFunc);
+				}
+				if (!moduleName.empty())
+				{
+					functions_module[currentFunc] = functions[currentFunc];
+					functions_module_args[currentFunc] = functions_args[currentFunc];
+				}
+				currentFunc = "";
 			}
-			if (!moduleName.empty())
-			{
-				functions_module[currentFunc] = functions[currentFunc];
-				functions_module_args[currentFunc] = functions_args[currentFunc];
+			if (isWhileLoop) {
+				isWhileLoop = false;
+				VM* vm = new VM();
+				DoLogic(vm);
+				while (!breakCurrentLoop) {
+					vm->Compile(whileLoops[currentForLoop]);
+					if (breakCurrentLoop) {
+                        break;
+					}
+				}
+				delete vm;
+				breakCurrentLoop = false;
+				currentForLoop += 1;
 			}
-			currentFunc = "";
 			continue;
 		}
 		if (lineData[0] == "IFOP" || (lineData[0] == "ELSEIFOP" && skipStatment == true)) {
-			std::string op1 = removeWhitespace(lineData[1], false);
-			std::string op2 = removeWhitespace(lineData[3], false);
-			bool op1_is_func = false;
-			bool op2_is_func = false;
-
-			try {
-				std::string op3 = op1.substr(0,op1.find("->("));
-				std::vector<std::string> args1; // Vector to store arguments
-				size_t start = op1.find("->(") + 3; // Skip "->("
-				size_t end = op1.find(")", start); // Find closing parenthesis
-				if (start != std::string::npos && end != std::string::npos) {
-					std::string arg = op1.substr(start, end - start);
-					std::stringstream ss(arg);
-					while (std::getline(ss, arg, ',')) {
-						// Trim whitespace around the argument
-						arg.erase(0, arg.find_first_not_of(" \t\n"));
-						arg.erase(arg.find_last_not_of(" \t\n") + 1);
-						if (!arg.empty()) {
-							args1.push_back(arg); // Add non-empty argument to the vector
-						}
-					}
-				}
-				std::string op4 = op2.substr(0,op2.find("->("));
-				std::vector<std::string> args2; // Vector to store arguments
-				start = op2.find("->(") + 3; // Skip "->("
-				end = op2.find(")", start); // Find closing parenthesis
-				if (start != std::string::npos && end != std::string::npos) {
-					std::string arg = op2.substr(start, end - start);
-					std::stringstream ss_2(arg);
-					while (std::getline(ss_2, arg, ',')) {
-						// Trim whitespace around the argument
-						arg.erase(0, arg.find_first_not_of(" \t\n"));
-						arg.erase(arg.find_last_not_of(" \t\n") + 1);
-						if (!arg.empty()) {
-							args2.push_back(arg); // Add non-empty argument to the vector
-						}
-					}
-				}
-				std::variant<std::string, std::nullptr_t> value_1 = RunFuncWithArgs(args1, op3, op1_is_func);
-				std::variant<std::string, std::nullptr_t> value_2 = RunFuncWithArgs(args2, op4, op2_is_func);
-				if (std::holds_alternative<std::string>(value_1))
-				{
-					op1 = std::get<std::string>(value_1);
-				}
-				if (std::holds_alternative<std::string>(value_2))
-				{
-					op2 = std::get<std::string>(value_2);
-				}
-			} catch (...) {
-				// add something here later idc
-			}	
-
-			// Replace with actual variable values if they exist and its not a function
-			op1 = (var_names.count(op1) != 0 && op1_is_func == false) ? var_names[op1] : op1;
-			op2 = (var_names.count(op2) != 0 && op2_is_func == false) ? var_names[op2] : op2;
-
+			std::vector<std::string> args = DoStringLogic(lineData[1], lineData[3]);
+			std::string op1 = args[0];
+			std::string op2 = args[1];
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
 				{"==", std::equal_to<std::string>()},
 				{"~=", std::not_equal_to<std::string>()},
-				{"!>", std::greater<std::string>()},
-				{">=", std::greater_equal<std::string>()},
-				{"<!", std::less<std::string>()},
-				{"<=", std::less_equal<std::string>()}
+				{"<", [](const std::string& a, const std::string& b) { return std::stoi(a) < std::stoi(b); }},
+				{">", [](const std::string& a, const std::string& b) { return std::stoi(a) > std::stoi(b); }},
+				{"<=", [](const std::string& a, const std::string& b) { return std::stoi(a) <= std::stoi(b); }},
+				{">=", [](const std::string& a, const std::string& b) { return std::stoi(a) >= std::stoi(b); }}
 			};
-
 			// Use the comparison operator to determine skipStatment
 			auto it = comparisonOps.find(lineData[2]);
 			if (it != comparisonOps.end()) {
@@ -303,6 +391,47 @@ void VM::Compile(std::string customData, std::string moduleName)
 		if (skipStatment)
 		{
 			continue;
+		}
+		else if (lineData[0] == "WHILELOOPCALL") {
+			if (isWhileLoop == false) {
+				continue;
+			}
+			std::string stuffAdd;
+			for (size_t i = 0; i < lineData.size(); i++)
+			{
+				if (lineData[i] == "WHILELOOPCALL")
+				{
+					continue;
+				}
+				stuffAdd += lineData[i] + ((lineData[i] == "EOF" || lineData[i] == "END") ? " " : ",");
+			}
+			whileLoops[currentForLoop] += stuffAdd + "\n";
+			continue;
+		}
+		else if (lineData[0] == "WHILE") {
+			std::vector<std::string> args = DoStringLogic(lineData[1], lineData[3]);
+			std::string op1 = args[0];
+			std::string op2 = args[1];
+			// Map operators to lambda functions for comparisons
+			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
+				{"==", std::equal_to<std::string>()},
+				{"~=", std::not_equal_to<std::string>()},
+				{"!>", std::greater<std::string>()},
+				{">=", std::greater_equal<std::string>()},
+				{"<!", std::less<std::string>()},
+				{"<=", std::less_equal<std::string>()}
+			};
+			// Use the comparison operator to determine skipStatment
+			auto it = comparisonOps.find(lineData[2]);
+			if (it != comparisonOps.end()) {
+				whileLoops[currentForLoop] = "";
+				whileLoops_args[currentForLoop] = {op1, lineData[2], op2};
+				isWhileLoop = it->second(op1, op2); // Negate for skipStatment logic
+			}
+		}
+		else if (lineData[0] == "BREAK") {
+			breakCurrentLoop = true;
+			return;
 		}
 		else if (lineData[0] == "BEGINFUN")
 		{
@@ -477,67 +606,8 @@ void VM::Compile(std::string customData, std::string moduleName)
 			{
 				lineData[1] = moduleName + "." + lineData[1];
 			}
-			lineData[2].erase(std::remove(lineData[2].begin(), lineData[2].end(), '\"'), lineData[2].end());
-			std::vector<std::string> args;
-			std::string temp = lineData[2].substr(0, lineData[2].find("->"));
-			std::string data = lineData[2];
-			size_t pos = data.find("->(");
-			if (pos != std::string::npos) {
-				data = data.substr(pos + 3); // Extract substring after "->("
-				data.erase(std::remove(data.begin(), data.end(), ')'), data.end()); // Remove closing ')'
-			}
-			std::stringstream ss2(data);
-			while (std::getline(ss2, arg, '+')) {
-				// Trim whitespace around the argument
-				arg.erase(arg.find_last_not_of(" \t\n") + 1);
-				arg.erase(0, arg.find_first_not_of(" \t\n")); // Trim leading whitespace
-				if (arg.size() > 1 && 
-					((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''))) {
-					arg = arg.substr(1, arg.size() - 2); // Strip outer quotes
-				}
-				if (arg.size() >= 2 && arg[arg.size() - 2] == '\\' && arg[arg.size() - 1] == 'n') {
-					arg.erase(arg.size() - 2);  // Remove the last two characters
-				}
-				change_line(arg);
-				args.push_back(arg); 
-			}
-			if (lineData.size() > 0)
-			{
-				for (size_t i = 2; i < lineData.size(); i++)
-				{
-					if (((lineData[i] == lineData[1] && var_names.count(lineData[i]) == 0)) == true)
-					{
-						continue;
-					}
-					if (lineData[i] == "EOF")
-					{
-						continue;
-					}
-					std::string backUpVar = lineData[i];
-					if ((lineData[i].front() == '"' && lineData[i].back() == '"') || (lineData[i].front() == '\'' && lineData[i].back() == '\'')) {
-						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
-					}
-					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
-						for (const auto& var : var_names)
-						{
-							if (var.first == lineData[i]) {
-                                args.push_back(var.second);  // Use the stored value if found
-                            }
-						}
-					} else {
-						args.push_back(backUpVar);  // Use the original string if not found
-					}
-				}
-			}
-			if (functions.count(temp) != 0)
-			{
-				var_names[lineData[1]] = RunScriptFunction(temp, args);
-			}
-			else
-			{
-				std::string var_data = var_names.count(lineData[2]) != 0 ? var_names[lineData[2]] : lineData[2];
-				var_names[lineData[1]] = var_data;
-			}
+			std::string var_data = var_names.count(lineData[2]) != 0 ? var_names[lineData[2]] : lineData[2];
+			var_names[lineData[1]] = var_data;
 			if (!moduleName.empty())
 			{
 				var_module_names[lineData[1]] = var_names[lineData[1]];
@@ -654,6 +724,24 @@ void VM::Compile(std::string customData, std::string moduleName)
 			{
 				outerFunctions[lineData[1]](args);
 			}
+		} else if (lineData[0] == "INC") {
+			std::string arg_1 = lineData[1];
+			std::string arg_2 = lineData[2];
+			bool foundVar = false;
+			std::unordered_map<std::string, std::function<std::string(const std::string&, const std::string&)>> ops = {
+				{"++", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) + 1); }},
+				{"--", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) - 1); }},
+			};
+			for (const auto& [var, key] : var_names) {
+				if (var == arg_1) {
+					foundVar = true;
+					break;
+				}
+			}
+			if (!foundVar) {
+				continue;
+			}
+			var_names[arg_1] = ops[arg_2](var_names[arg_1], arg_2);
 		}
 	}
 }

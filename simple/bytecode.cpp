@@ -34,6 +34,10 @@ std::vector<std::string> bytecodes = {
 	"ELSE",
 	"DEFTOP",
 	"BEGINFUN",
+	"ENDFUNC",
+	"DOFUNCCALL",
+	"RETURN",
+	"LOADSLIB",
 };
 
 #ifdef __cplusplus

@@ -13,6 +13,15 @@ set(SRCS
     token.cpp
     vm.cpp
     os_windows.cpp
+    muParser.cpp
+    muParserBase.cpp
+    muParserBytecode.cpp
+    muParserCallback.cpp
+    muParserDLL.cpp
+    muParserError.cpp
+    muParserInt.cpp
+    muParserTest.cpp
+    muParserTokenReader.cpp
 )
 
 # Create the dist directory if it doesn't exist

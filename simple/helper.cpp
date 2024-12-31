@@ -102,6 +102,21 @@ std::string removeComments(const std::string& input) {
     return result;
 }
 
+bool isVersionLike(const std::string& str) {
+    // Regular expression for version-like string
+    std::regex versionRegex(R"(v\d+\.\d+\.\d+)");
+    return std::regex_match(str, versionRegex);
+}
+
+bool isNumeric(const std::string& str) {
+    for (char c : str) {
+        if (!std::isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 #ifdef __cplusplus
 }
 #endif
