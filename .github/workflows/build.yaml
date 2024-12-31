@@ -17,7 +17,7 @@ jobs:
         build_type: [Release]
         include:
           - os: windows-latest
-            cpp_compiler: g++
+            cpp_compiler: clang++
             shell: pwsh
           - os: ubuntu-latest
             cpp_compiler: g++
@@ -38,12 +38,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # Install MinGW and g++ on Windows
-    - name: Install MinGW (g++ for Windows)
+    # Install Clang on Windows
+    - name: Install LLVM/Clang (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        choco install mingw
-        echo "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin" >> $GITHUB_PATH
+        choco install llvm
+        echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
 
     - name: Set reusable strings
       id: strings
@@ -61,11 +61,11 @@ jobs:
       env:
         CXX: ${{ matrix.cpp_compiler }}
 
-    - name: Configure CMake (Windows with g++)
+    - name: Configure CMake (Windows with Clang++)
       if: matrix.os == 'windows-latest'
       shell: pwsh
       run: |
-        cmake -G "MinGW Makefiles" `
+        cmake -G "Ninja" `
         -B ${{ steps.strings.outputs.build-output-dir }} `
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
