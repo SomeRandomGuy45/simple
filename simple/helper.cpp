@@ -117,6 +117,31 @@ bool isNumeric(const std::string& str) {
     return true;
 }
 
+std::vector<std::string> split(const std::string& str, char delimiter) {
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string token;
+
+    while (std::getline(ss, token, delimiter)) {
+		if (token == "EOF")
+		{
+			continue;
+		}
+        result.push_back(token);
+    }
+
+    return result;
+}
+
+
+void change_line(std::string& str) {
+    size_t pos = 0;
+    while ((pos = str.find("\\n", pos)) != std::string::npos) {
+        str.replace(pos, 2, "\n");
+        pos += 1; // Move past the replacement
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif
