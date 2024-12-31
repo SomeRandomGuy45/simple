@@ -1,0 +1,30 @@
+!define MIN_RAM 256
+!define MIN_VERSION v1.0.0
+
+add table
+add rand
+
+func! new()
+    global table_name = rand.random_string->(10)
+    table.new_table->(table_name)
+    return table_name
+end!
+
+func! add(arg1, arg2, arg3)
+    table.new_table_object->(arg1, arg2, arg3)
+end!
+
+func! get(arg1, arg2)
+    global table_object = table.get_table_item->(arg1, arg2)
+    return table_object
+end!
+
+func! set_seed(arg1)
+    rand.set_seed->(arg1)
+end!
+
+global table_test = new->()
+global myName = "sdfsfsdf
+add->(table_test, myName, "hii3i")
+global getV = get->(table_test, myName)
+print->(getV)

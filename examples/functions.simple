@@ -36,10 +36,3 @@ func! argFunc(arg1, arg2)
     print->(myBlbobasdojsa)
     return myBlbobasdojsa
 end!
-
-/*
-* How the function gets called
-*/
-
-argFunc->("h", "cool")
-argFunc->("bye!", "cool")

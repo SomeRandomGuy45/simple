@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
 
     std::ofstream outputFile(tempPath, std::ios::in | std::ios::out | std::ios::trunc);
 
-    std::cout << "Simple " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
+    std::cout << "Simple " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc - 1) << "\n";
 
     while (true) {
         outputFile.seekp(0);
@@ -314,7 +314,7 @@ int main(int argc, char** argv) {
 
         if (newLine == "clear->()") {
             std::cout << "\033[2J\033[1;1H";
-            std::cout << "Simple " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc) << "\n";
+            std::cout << "Simple " << SIMPLE_FULL_VERSION << " Arg count is: " << std::to_string(argc - 1) << "\n";
         }
 
         if (newLine == "clear") {

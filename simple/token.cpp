@@ -174,10 +174,10 @@ void Token::processScriptLines() {
 void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunction) {
     std::smatch match;
     // Global variable assignment
-    if (std::regex_match(line, match, std::regex(R"(global\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*\(([^()]*)\))"))) {
+    if (std::regex_match(line, match, std::regex(R"(global\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_\.]*)\s*->\s*\(([^()]*)\))"))) {
         currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
     }
-    else if (std::regex_match(line, match, std::regex(R"(([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*\(([^()]*)\))"))) {
+    else if (std::regex_match(line, match, std::regex(R"(([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*([a-zA-Z_][a-zA-Z0-9_\.]*)\s*->\s*\(([^()]*)\))"))) {
         currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
     }
     else if (line.substr(0, 6) == "global") {

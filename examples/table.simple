@@ -1,0 +1,20 @@
+/*
+* table is a 1st party library
+* It's different from other programming languages but it should work
+* PS: When you are using it, it declares it gloably
+*/
+
+!define MIN_RAM 256
+!define MIN_VERSION v1.0.0
+
+add table
+add rand
+
+rand.set_seed->()
+
+table.new_table->("bob")
+table.new_table_object->("bob","bbb", "hiii")
+global var = table.get_table_item->("bob", "bbb")
+global var2 = rand.random_string->(10)
+print->(var)
+print->(var2)

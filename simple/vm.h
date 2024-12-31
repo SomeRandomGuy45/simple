@@ -2,7 +2,6 @@
 #define VM_
 #include "config.h"
 #include "bytecode.h"
-#include "table/Node.h"
 
 #include <variant>
 #include <algorithm>
@@ -20,7 +19,6 @@ public:
 	//Why try to create a VM without the path to the compiled file
 	VM() = default;
 	VM(std::string src);
-	Node parse(std::string input);
 
 	void DoLogic(VM* v);
 	std::string RunScriptFunction(std::string func_name, std::vector<std::string> args);

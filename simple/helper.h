@@ -95,6 +95,7 @@ extern "C" {
 std::string removeWhitespace(std::string str, bool NO_SPACE);
 std::string getRandomFileName();
 std::string expandHomeDirectory(const std::string& path);
+std::string removeComments(const std::string& input);
 
 #ifdef __cplusplus
 }

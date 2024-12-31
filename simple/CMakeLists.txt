@@ -12,7 +12,6 @@ set(SRCS
     helper.cpp
     token.cpp
     vm.cpp
-    Node.cpp
     os_windows.cpp
 )
 

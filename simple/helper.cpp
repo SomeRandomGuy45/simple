@@ -87,6 +87,21 @@ std::string expandHomeDirectory(const std::string& path) {
     return path; // Return unchanged if not starting with '~'
 }
 
+std::string removeComments(const std::string& input) {
+    std::string result;
+    std::istringstream stream(input);
+    std::string line;
+    while (std::getline(stream, line)) {
+        // Ignore everything after "//"
+        size_t commentPos = line.find("//");
+        if (commentPos != std::string::npos) {
+            line = line.substr(0, commentPos);
+        }
+        result += line + "\n";
+    }
+    return result;
+}
+
 #ifdef __cplusplus
 }
 #endif
