@@ -86,7 +86,7 @@ namespace mu
 	  _T(")"),   _T("?"),  _T(":"), 0
 	};
 
-	const int ParserBase::s_MaxNumOpenMPThreads = 16;
+	open_ const int ParserBase::s_MaxNumOpenMPThreads = 16;
 
 	//------------------------------------------------------------------------------
 	/** \brief Constructor.
