@@ -38,12 +38,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # Install Clang on Windows
-    - name: Install LLVM/Clang (Windows)
+    # Install LLVM/Clang and Ninja on Windows
+    - name: Install LLVM/Clang and Ninja (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         choco install llvm
+        choco install ninja
         echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
+        echo "C:/ProgramData/chocolatey/bin" >> $GITHUB_PATH
 
     - name: Set reusable strings
       id: strings
@@ -67,11 +69,13 @@ jobs:
       run: |
         cmake -G "Ninja" `
         -B ${{ steps.strings.outputs.build-output-dir }} `
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+        -DCMAKE_C_COMPILER=clang `
+        -DCMAKE_CXX_COMPILER=clang++ `
+        -DCMAKE_MAKE_PROGRAM=ninja `
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
         -S ${{ github.workspace }}/simple
       env:
-        CXX: ${{ matrix.cpp_compiler }}
+        CXX: clang++
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
