@@ -39,11 +39,17 @@ using namespace std;
 	\brief This file contains the implementation of parser test cases.
 */
 
+#ifdef _WIN32
+#define open_ __declspec(dllexport)
+#else
+#define open_ 
+#endif
+
 namespace mu
 {
 	namespace Test
 	{
-		int ParserTester::c_iCount = 0;
+		open_ int ParserTester::c_iCount = 0;
 
 		//---------------------------------------------------------------------------------------------
 		ParserTester::ParserTester()
