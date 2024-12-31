@@ -51,6 +51,12 @@
 	#pragma warning(disable : 26812) 
 #endif
 
+#ifdef _WIN32
+#define open_ __declspec(dllexport)
+#else
+#define open_ 
+#endif
+
 using namespace std;
 
 /** \file
@@ -59,10 +65,10 @@ using namespace std;
 
 namespace mu
 {
-	std::locale ParserBase::s_locale = std::locale(std::locale::classic(), new change_dec_sep<char_type>('.'));
+	open_ std::locale ParserBase::s_locale = std::locale(std::locale::classic(), new change_dec_sep<char_type>('.'));
 
-	bool ParserBase::g_DbgDumpCmdCode = false;
-	bool ParserBase::g_DbgDumpStack = false;
+	open_ bool ParserBase::g_DbgDumpCmdCode = false;
+	open_ bool ParserBase::g_DbgDumpStack = false;
 
 	//------------------------------------------------------------------------------
 	/** \brief Identifiers for built in binary operators.
@@ -70,7 +76,7 @@ namespace mu
 		When defining custom binary operators with #AddOprt(...) make sure not to choose
 		names conflicting with these definitions.
 	*/
-	const char_type* ParserBase::c_DefaultOprt[] =
+	open_ const char_type* ParserBase::c_DefaultOprt[] =
 	{
 	  _T("<="), _T(">="),  _T("!="),
 	  _T("=="), _T("<"),   _T(">"),
