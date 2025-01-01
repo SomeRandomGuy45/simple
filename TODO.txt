@@ -16,6 +16,7 @@
         func! myFunc()
             return "thank you!"
         end!
+        print->(myFunc->())
 3: Add for loops
     Example:
         for i in 1, 10 do
