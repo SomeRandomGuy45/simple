@@ -13,6 +13,7 @@ set(SRCS
     token.cpp
     vm.cpp
     os_windows.cpp
+    tinyexpr.c
 )
 
 # Create the dist directory if it doesn't exist

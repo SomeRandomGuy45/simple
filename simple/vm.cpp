@@ -1,5 +1,5 @@
 #include "vm.h"
-#include "exprtk.hpp"
+#include "tinyexpr.h"
 
 std::unordered_map<std::string, std::string> functions_module;
 std::unordered_map<std::string, std::string> functions_module_args;
@@ -112,45 +112,48 @@ std::string formatNumber(double value) {
 
     return result;
 }
-
 std::variant<double, std::nullptr_t> VM::evaluateExpression(const std::string& expr) {
-// Create a symbol table to hold variables
-    exprtk::symbol_table<double> symbol_table;
-    exprtk::expression<double> expression;
-    exprtk::parser<double> parser;
-    
     std::unordered_map<std::string, double> variables;
-
-    // Define variables and bind them to the symbol table
+    
     for (const auto& [var, val_str] : var_names) {
         if (expr == var) {
-            return nullptr;  // Return nullptr if the expression is just a variable name
+            return nullptr;
         }
-        try {
-            double val = std::stod(val_str);  // Convert string to double
-            variables[var] = val;
-            symbol_table.add_variable(var, variables[var]);  // Add variable to the symbol table
-        } catch (const std::invalid_argument&) {
-            continue;
-        } catch (const std::out_of_range&) {
-            continue;
-        }
-    }
-
-    // Bind the symbol table to the expression
-    expression.register_symbol_table(symbol_table);
-
-    // Set the expression
-    if (!parser.compile(expr, expression)) {
-        return nullptr;  // Return nullptr if the expression can't be parsed
     }
 
     try {
-        // Evaluate the expression
-        double result = expression.value();
+        // Convert variables from strings to doubles
+        for (const auto& [var, val_str] : var_names) {
+            try {
+                double val = std::stod(val_str); // Convert string to double
+                variables[var] = val;
+            } catch (const std::invalid_argument&) {
+                continue;
+            } catch (const std::out_of_range&) {
+                continue;
+            }
+        }
+
+        // Prepare variables for TinyExpr
+        std::vector<te_variable> te_vars;
+        for (const auto& [var, val] : variables) {
+            te_vars.push_back({var.c_str(), &variables[var]});
+        }
+
+        // Parse and evaluate the expression
+        int error_index = 0;
+        te_expr* compiled_expr = te_compile(expr.c_str(), te_vars.data(), te_vars.size(), &error_index);
+
+        if (!compiled_expr) {
+            return nullptr; // Invalid expression
+        }
+
+        double result = te_eval(compiled_expr);
+        te_free(compiled_expr); // Free the compiled expression
+
         return result;
     } catch (...) {
-        return nullptr;  // Catch any errors during evaluation
+        return nullptr;
     }
 }
 
