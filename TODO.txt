@@ -1,0 +1,23 @@
+----------------------------------------
+|--------------- [TODO] ---------------|
+----------------------------------------
+
+1: Allowing function operations
+    Example:
+        func! fib(x)
+            if 3 > x then
+                return 1
+            else
+                return fib->(x - 1) + fib->(x - 2)
+            end
+        end!
+2: Allowing function calling in function args
+    Example:
+        func! myFunc()
+            return "thank you!"
+        end!
+3: Add for loops
+    Example:
+        for i in 1, 10 do
+            print->(i)
+        end!

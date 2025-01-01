@@ -335,6 +335,10 @@ void VM::Compile(std::string customData, std::string moduleName)
                         break;
 					}
 				}
+				for (const auto& [name, value] : vm->var_names)
+				{
+					var_names[name] = value;
+				}
 				delete vm;
 				breakCurrentLoop = false;
 				currentForLoop += 1;
@@ -347,8 +351,8 @@ void VM::Compile(std::string customData, std::string moduleName)
 			std::string op2 = args[1];
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
-				{"==", std::equal_to<std::string>()},
-				{"~=", std::not_equal_to<std::string>()},
+				{"==", [](const std::string& a, const std::string& b) { return a == b; }},
+				{"~=", [](const std::string& a, const std::string& b) { return a != b; }},
 				{"<", [](const std::string& a, const std::string& b) { return std::stoi(a) < std::stoi(b); }},
 				{">", [](const std::string& a, const std::string& b) { return std::stoi(a) > std::stoi(b); }},
 				{"<=", [](const std::string& a, const std::string& b) { return std::stoi(a) <= std::stoi(b); }},
@@ -356,11 +360,13 @@ void VM::Compile(std::string customData, std::string moduleName)
 			};
 			// Use the comparison operator to determine skipStatment
 			auto it = comparisonOps.find(lineData[2]);
-			if (it != comparisonOps.end()) {
+			if (lineData[0] == "ELSEIFOP") {
+				std::cout << (skipStatment ? "true" : "false") << "\n";
+			}
+			if (lineData[0] == "ELSEIFOP" && skipStatment == true) {
+				isElseif = !it->second(op1, op2);;
+			} else if (it != comparisonOps.end()) {
 				skipStatment = !it->second(op1, op2); // Negate for skipStatment logic
-				if (lineData[0] == "ELSEIFOP" && skipStatment) {
-					isElseif = !skipStatment;
-				}
 			}
 			//ifStatementValues.push_back(skipStatment);
 		} 
@@ -519,6 +525,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 				continue;
 			}
 			returnValue = lineData[1];
+			return;
 		}
 		else if (lineData[0] == "LOADSLIB") {
 			std::string libPath = std::filesystem::current_path().string() + "/" + lineData[1] + ".sbcc";
