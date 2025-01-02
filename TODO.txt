@@ -11,7 +11,7 @@
                 return fib->(x - 1) + fib->(x - 2)
             end
         end!
-2: Allowing function calling in function args
+2: Allowing function calling in function args (DONE!)
     Example:
         func! myFunc()
             return "thank you!"
@@ -22,3 +22,8 @@
         for i, range->(1, 10), 3 do
             print->(i)
         end!
+4: Add && and || for if statements (UNLIKELY!!)
+    Example:
+        if true == true && false == false then
+            print->("hi!")
+        end
