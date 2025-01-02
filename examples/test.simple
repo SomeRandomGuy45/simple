@@ -1,4 +1,9 @@
 add rand
+add sys
+print->(sys.is_using_default_stdout)
+sys.set_output->(stdout, test.txt)
 print->(rand.seed)
 rand.seed = -3
 print->(rand.seed)
+sys.set_output->(stdout, default)
+print->("done logging")

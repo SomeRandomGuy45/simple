@@ -37,3 +37,37 @@ void __set_output(const std::vector<std::string>& args) {
         }
     }
 }
+
+open DLLEXPORT ReturnType helper set_output(const std::vector<std::string>& args) {
+    __set_output(args);
+    return nullptr;
+}
+
+open DLLEXPORT std::vector<std::string> helper listFunctions() {
+    return {"set_output"};
+}
+
+open DLLEXPORT FunctionPtr helper getFunction(const char* name) {
+    if (std::string(name) == "set_output") {
+        return &set_output;
+    }
+    return nullptr;
+}
+
+open DLLEXPORT std::vector<std::string> helper listVars()
+{
+    return {"is_using_default_stdout", "is_using_default_stderr"};
+}
+
+open DLLEXPORT VarType helper getVariable(const char *name)
+{
+    std::string varName(name);
+    if (varName == "is_using_default_stdout") {
+        std::string returnValue = is_using_default_stdout ? "true" : "false";
+        return returnValue;
+    } else if (varName == "is_using_default_stderr") {
+        std::string returnValue = is_using_default_stderr ? "true" : "false";
+        return returnValue;
+    }
+    return "";
+}
