@@ -211,7 +211,7 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
         }
         currentBytecodeFile << "RETURN," << str << std::endl;
     }
-    else if (std::regex_match(line, match, std::regex(R"((.+)(\+\+|--)\s*)"))) {
+    else if (std::regex_match(line, match, std::regex(R"((.+)(\+\+|--|\*\*|\/\/)\s*)"))) {
         currentBytecodeFile << "INC," << match[1].str() << "," << match[2].str() << std::endl;
     }
     // If statement

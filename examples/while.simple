@@ -27,11 +27,12 @@ func! test(x)
     else
         return 300
     end
+    return 14
 end!
 
-global a = hi->()
-print->(a)
-global b = fib->(8)
-print->(b)
-global c = test->(31)
-print->(c)
+print->(hi->())
+print->(fib->(8))
+print->(test->(31))
+global x = 8.23
+x**
+print->(x)

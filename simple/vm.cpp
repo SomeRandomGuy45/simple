@@ -280,6 +280,12 @@ void VM::Compile(std::string customData, std::string moduleName)
 		}
 	}
 	for (const std::string& line : scriptLines) {
+		for (const auto& [key, value] : functions) {
+			if (value.empty()) {
+				functions.erase(key);
+				continue;
+			}
+		}
 		std::stringstream ss(line);
 		std::string arg;
 		std::vector<std::string> lineData;
@@ -360,6 +366,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 			std::vector<std::string> args = DoStringLogic(lineData[1], lineData[3]);
 			std::string op1 = args[0];
 			std::string op2 = args[1];
+			//std::cout << op1 << " " << op2 << std::endl;
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
 				{"==", [](const std::string& a, const std::string& b) {	
@@ -376,10 +383,10 @@ void VM::Compile(std::string customData, std::string moduleName)
 						return a != b;
 					}
 				 }},
-				{"<", [](const std::string& a, const std::string& b) { return std::stoi(a) < std::stoi(b); }},
-				{">", [](const std::string& a, const std::string& b) { return std::stoi(a) > std::stoi(b); }},
-				{"<=", [](const std::string& a, const std::string& b) { return std::stoi(a) <= std::stoi(b); }},
-				{">=", [](const std::string& a, const std::string& b) { return std::stoi(a) >= std::stoi(b); }}
+				{"<", [](const std::string& a, const std::string& b) { return std::stod(a) < std::stod(b); }},
+				{">", [](const std::string& a, const std::string& b) { return std::stod(a) > std::stod(b); }},
+				{"<=", [](const std::string& a, const std::string& b) { return std::stod(a) <= std::stod(b); }},
+				{">=", [](const std::string& a, const std::string& b) { return std::stod(a) >= std::stod(b); }}
 			};
 			// Use the comparison operator to determine skipStatment
 			auto it = comparisonOps.find(lineData[2]);
@@ -447,7 +454,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 			breakCurrentLoop = true;
 			break;
 		}
-		else if (lineData[0] == "BEGINFUN")
+		else if (lineData[0] == "BEGINFUN" && currentFunc.empty())
 		{
 			if (!moduleName.empty())
 			{
@@ -785,7 +792,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 					if ((lineData[i].front() == '"' && lineData[i].back() == '"') || (lineData[i].front() == '\'' && lineData[i].back() == '\'')) {
 						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
 					}
-					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1 && didUseFunction == false) {
 						for (const auto& var : var_names)
 						{
 							if (var.first == lineData[i]) {
@@ -798,7 +805,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 				}
 			}
 			if (functions.count(lineData[1]) != 0)
-			{
+			{	
 				RunScriptFunction(lineData[1], args);
 			}
 			if (funcNames.count(lineData[1]) != 0)
@@ -816,6 +823,8 @@ void VM::Compile(std::string customData, std::string moduleName)
 			std::unordered_map<std::string, std::function<std::string(const std::string&, const std::string&)>> ops = {
 				{"++", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) + 1); }},
 				{"--", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) - 1); }},
+				{"**", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) * std::stod(a)); }},
+				{"//", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) * std::stod(a)); }},
 			};
 			for (const auto& [var, key] : var_names) {
 				if (var == arg_1) {
