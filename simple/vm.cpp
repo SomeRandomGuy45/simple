@@ -243,6 +243,11 @@ std::variant<std::string, std::nullptr_t> VM::RunFuncWithArgs(std::vector<std::s
 			return "";
 		}
 	}
+	else if (functions.count(lineData) != 0) {
+		isFunc = true;
+		std::string returnValue = RunScriptFunction(lineData, args);
+		return returnValue;
+	}
 	return nullptr;
 }
 //This is the implementation of how we can run the code from the bytecode!
@@ -642,11 +647,35 @@ void VM::Compile(std::string customData, std::string moduleName)
 					{
 						continue;
 					}
+					bool didUseFunction = false;
 					std::string backUpVar = lineData[i];
+					try {
+						std::string functionName = lineData[i].substr(0,lineData[i].find("->("));
+						std::vector<std::string> args; // Vector to store arguments
+						size_t start = lineData[i].find("->(") + 3; // Skip "->("
+						size_t end = lineData[i].find(")", start); // Find closing parenthesis
+						if (start != std::string::npos && end != std::string::npos) {
+							std::string arg = lineData[i].substr(start, end - start);
+							std::stringstream ss(arg);
+							while (std::getline(ss, arg, ',')) {
+								// Trim whitespace around the argument
+								arg.erase(0, arg.find_first_not_of(" \t\n"));
+								arg.erase(arg.find_last_not_of(" \t\n") + 1);
+								if (!arg.empty()) {
+									args.push_back(arg); // Add non-empty argument to the vector
+								}
+							}
+						}
+						std::variant<std::string, std::nullptr_t> value = RunFuncWithArgs(args, functionName, didUseFunction);
+						if (std::holds_alternative<std::string>(value))
+						{
+							backUpVar = std::get<std::string>(value);
+						}
+					} catch (...) {};
 					if ((lineData[i].front() == '"' && lineData[i].back() == '"') || (lineData[i].front() == '\'' && lineData[i].back() == '\'')) {
 						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
 					}
-					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1) {
+					if (!lineData[i].empty() && var_names.count(lineData[i]) == 1 && didUseFunction == false) {
 						for (const auto& var : var_names)
 						{
 							if (var.first == lineData[i]) {
@@ -728,7 +757,31 @@ void VM::Compile(std::string customData, std::string moduleName)
 					{
 						continue;
 					}
+					bool didUseFunction = false;
 					std::string backUpVar = lineData[i];
+					try {
+						std::string functionName = lineData[i].substr(0,lineData[i].find("->("));
+						std::vector<std::string> args; // Vector to store arguments
+						size_t start = lineData[i].find("->(") + 3; // Skip "->("
+						size_t end = lineData[i].find(")", start); // Find closing parenthesis
+						if (start != std::string::npos && end != std::string::npos) {
+							std::string arg = lineData[i].substr(start, end - start);
+							std::stringstream ss(arg);
+							while (std::getline(ss, arg, ',')) {
+								// Trim whitespace around the argument
+								arg.erase(0, arg.find_first_not_of(" \t\n"));
+								arg.erase(arg.find_last_not_of(" \t\n") + 1);
+								if (!arg.empty()) {
+									args.push_back(arg); // Add non-empty argument to the vector
+								}
+							}
+						}
+						std::variant<std::string, std::nullptr_t> value = RunFuncWithArgs(args, functionName, didUseFunction);
+						if (std::holds_alternative<std::string>(value))
+						{
+							backUpVar = std::get<std::string>(value);
+						}
+					} catch (...) {};
 					if ((lineData[i].front() == '"' && lineData[i].back() == '"') || (lineData[i].front() == '\'' && lineData[i].back() == '\'')) {
 						lineData[i] = lineData[i].substr(1, lineData[i].size() - 2);
 					}
