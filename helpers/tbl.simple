@@ -23,8 +23,10 @@ func! set_seed(arg1)
     rand.set_seed->(arg1)
 end!
 
-global table_test = new->()
-global myName = "sdfsfsdf
-add->(table_test, myName, "hii3i")
-global getV = get->(table_test, myName)
-print->(getV)
+func! test_table()
+    global table_test = new->()
+    global myName = "sdfsfsdf"
+    add->(table_test, myName, "hii3i")
+    global getV = get->(table_test, myName)
+    print->(getV)
+end!

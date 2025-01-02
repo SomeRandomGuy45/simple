@@ -237,71 +237,67 @@ static double comma(double a, double b) {(void)a; return b;}
 
 
 void next_token(state *s) {
+    static int insert_mul = 0; // Flag to insert multiplication
+    if (insert_mul) {
+        s->type = TOK_INFIX;
+        s->function = mul;
+        insert_mul = 0;
+        return;
+    }
+
     s->type = TOK_NULL;
 
     do {
-
-        if (!*s->next){
+        if (!*s->next) {
             s->type = TOK_END;
             return;
         }
 
-        /* Try reading a number. */
         if ((s->next[0] >= '0' && s->next[0] <= '9') || s->next[0] == '.') {
             s->value = strtod(s->next, (char**)&s->next);
             s->type = TOK_NUMBER;
-        } else {
-            /* Look for a variable or builtin function call. */
-            if (isalpha(s->next[0])) {
-                const char *start;
-                start = s->next;
-                while (isalpha(s->next[0]) || isdigit(s->next[0]) || (s->next[0] == '_')) s->next++;
-                
-                const te_variable *var = find_lookup(s, start, s->next - start);
-                if (!var) var = find_builtin(start, s->next - start);
-
-                if (!var) {
-                    s->type = TOK_ERROR;
-                } else {
-                    switch(TYPE_MASK(var->type))
-                    {
-                        case TE_VARIABLE:
-                            s->type = TOK_VARIABLE;
-                            s->bound = var->address;
-                            break;
-
-                        case TE_CLOSURE0: case TE_CLOSURE1: case TE_CLOSURE2: case TE_CLOSURE3:         /* Falls through. */
-                        case TE_CLOSURE4: case TE_CLOSURE5: case TE_CLOSURE6: case TE_CLOSURE7:         /* Falls through. */
-                            s->context = var->context;                                                  /* Falls through. */
-
-                        case TE_FUNCTION0: case TE_FUNCTION1: case TE_FUNCTION2: case TE_FUNCTION3:     /* Falls through. */
-                        case TE_FUNCTION4: case TE_FUNCTION5: case TE_FUNCTION6: case TE_FUNCTION7:     /* Falls through. */
-                            s->type = var->type;
-                            s->function = var->address;
-                            break;
-                    }
-                }
-
+            if (*s->next == '(') {
+                insert_mul = 1; // Queue multiplication for implicit handling
+            }
+        } else if (isalpha(s->next[0])) {
+            const char *start = s->next;
+            while (isalpha(s->next[0]) || isdigit(s->next[0]) || s->next[0] == '_') s->next++;
+            const te_variable *var = find_lookup(s, start, s->next - start);
+            if (!var) var = find_builtin(start, s->next - start);
+            if (!var) {
+                s->type = TOK_ERROR;
             } else {
-                /* Look for an operator or special character. */
-                switch (s->next++[0]) {
-                    case '+': s->type = TOK_INFIX; s->function = add; break;
-                    case '-': s->type = TOK_INFIX; s->function = sub; break;
-                    case '*': s->type = TOK_INFIX; s->function = mul; break;
-                    case '/': s->type = TOK_INFIX; s->function = divide; break;
-                    case '^': s->type = TOK_INFIX; s->function = pow; break;
-                    case '%': s->type = TOK_INFIX; s->function = fmod; break;
-                    case '(': s->type = TOK_OPEN; break;
-                    case ')': s->type = TOK_CLOSE; break;
-                    case ',': s->type = TOK_SEP; break;
-                    case ' ': case '\t': case '\n': case '\r': break;
-                    default: s->type = TOK_ERROR; break;
+                switch (TYPE_MASK(var->type)) {
+                    case TE_VARIABLE:
+                        s->type = TOK_VARIABLE;
+                        s->bound = var->address;
+                        break;
+                    case TE_FUNCTION0: case TE_FUNCTION1:
+                    case TE_FUNCTION2: case TE_FUNCTION3:
+                    case TE_FUNCTION4: case TE_FUNCTION5:
+                    case TE_FUNCTION6: case TE_FUNCTION7:
+                        s->type = var->type;
+                        s->function = var->address;
+                        break;
                 }
+            }
+        } else {
+            switch (s->next++[0]) {
+                case '+': s->type = TOK_INFIX; s->function = add; break;
+                case '-': s->type = TOK_INFIX; s->function = sub; break;
+                case '*': s->type = TOK_INFIX; s->function = mul; break;
+                case '/': s->type = TOK_INFIX; s->function = divide; break;
+                case '^': s->type = TOK_INFIX; s->function = pow; break;
+                case '%': s->type = TOK_INFIX; s->function = fmod; break;
+                case '(': s->type = TOK_OPEN; break;
+                case ')': s->type = TOK_CLOSE; break;
+                case ',': s->type = TOK_SEP; break;
+                case ' ': case '\t': case '\n': case '\r': break;
+                default: s->type = TOK_ERROR; break;
             }
         }
     } while (s->type == TOK_NULL);
 }
-
 
 static te_expr *list(state *s);
 static te_expr *expr(state *s);

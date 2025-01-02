@@ -41,7 +41,12 @@ std::string _random_string(const std::vector<std::string>& args) {
         std::cerr << "[RANDOM_STRING] Error: Invalid number of arguments\n";
         return "";
     }
-    size_t length = std::stoul(args[0]);
+    size_t length = 0;
+    try {
+        length = std::stoul(args[0]);
+    } catch (std::invalid_argument& e) {
+        length = 10;
+    }
     auto randchar = []() -> char
     {
         const char charset[] =
@@ -82,4 +87,18 @@ open DLLEXPORT FunctionPtr helper getFunction(const char* name) {
         return &set_seed;
     }
     return nullptr;
+}
+
+open DLLEXPORT std::vector<std::string> helper listVars()
+{
+    return {"seed"};
+}
+
+open DLLEXPORT VarType helper getVariable(const char *name)
+{
+    std::string varName(name);
+    if (varName == "seed") {
+        return std::to_string(seed);
+    }
+    return "";
 }

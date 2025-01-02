@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 std::unordered_map<std::string, FunctionPtr> outerFunctions;
+std::unordered_map<std::string, std::string> outerVariables;
 std::unordered_map<std::string, void*> loadedLibraries;
 std::vector<void*> allocatedBlocks;
 char** ARG_INPUT;
@@ -38,70 +39,6 @@ ReturnType print(std::vector<std::string> args)
 	}
 	std::cout << "\n";
     return nullptr;
-}
-
-ReturnType add(std::vector<std::string> args)
-{
-    if (args.size() < 2)
-    {
-        return "Error: Invalid number of arguments";
-    }
-    size_t finalNum = std::stoull(args[0]);
-    for (size_t i = 1; i < args.size(); ++i)
-    {
-        try {
-            finalNum += std::stoull(args[i]);
-        } catch (...) {};
-    }
-    return std::to_string(finalNum);
-}
-
-ReturnType sub(std::vector<std::string> args)
-{
-    if (args.size() < 2)
-    {
-        return "Error: Invalid number of arguments";
-    }
-    size_t finalNum = std::stoull(args[0]);
-    for (size_t i = 1; i < args.size(); ++i)
-    {
-        try {
-            finalNum -= std::stoull(args[i]);
-        } catch (...) {};
-    }
-    return std::to_string(finalNum);
-}
-
-ReturnType multi(std::vector<std::string> args)
-{
-    if (args.size() < 2)
-    {
-        return "Error: Invalid number of arguments";
-    }
-    size_t finalNum = std::stoull(args[0]);
-    for (size_t i = 1; i < args.size(); ++i)
-    {
-        try {
-            finalNum *= std::stoull(args[i]);
-        } catch (...) {};
-    }
-    return std::to_string(finalNum);
-}
-
-ReturnType divi(std::vector<std::string> args)
-{
-    if (args.size() < 2)
-    {
-        return "Error: Invalid number of arguments";
-    }
-    size_t finalNum = std::stoull(args[0]);
-    for (size_t i = 1; i < args.size(); ++i)
-    {
-        try {
-            finalNum /= std::stoull(args[i]);
-        } catch (...) {};
-    }
-    return std::to_string(finalNum);
 }
 
 ReturnType writeData(std::vector<std::string> args)
@@ -178,6 +115,14 @@ ReturnType sinFunc(std::vector<std::string> args)
     }
     double result = sin(angle);
     return std::to_string(result);
+}
+
+ReturnType libExists(std::vector<std::string> args) {
+    if (args.size() < 1) {
+        std::cout << "[LIBEXISTS] Error: Invalid number of arguments\n";
+        return nullptr;
+    }
+    
 }
 
 ReturnType allocMemory(std::vector<std::string> args)
@@ -309,10 +254,6 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"sin", sinFunc},
         {"allocMemory", allocMemory},
         {"freeMemory", freeMemory},
-        {"add", add},
-        {"sub", sub},
-        {"div", divi},
-        {"multi", multi},
         {"exit", exit_program},
         {"getInput", get_users_input},
         {"getArgs", getArgs},
@@ -372,6 +313,9 @@ void loadLibrary(const std::string& libName) {
         return;
     }
 
+    typedef VarType(*GetVarType)(const char*);
+    GetVarType getVar = reinterpret_cast<GetVarType>(getFunctionAddress(libHandle, "getVariable"));
+
     typedef std::vector<std::string>(*ListFunctionsType)(); // Default is __cdecl
     ListFunctionsType listFunctions = reinterpret_cast<ListFunctionsType>(getFunctionAddress(libHandle, "listFunctions"));
 
@@ -379,6 +323,9 @@ void loadLibrary(const std::string& libName) {
         std::cerr << "[VM] listFunctions address is null for library: " << libName << std::endl;
         return;
     }
+
+    typedef std::vector<std::string>(*ListVarType)();
+    ListVarType listVars = reinterpret_cast<ListVarType>(getFunctionAddress(libHandle, "listVars"));
 
     try {
 
@@ -400,6 +347,28 @@ void loadLibrary(const std::string& libName) {
     catch (...) {
         std::cerr << "[VM] Unknown exception while calling listFunctions." << std::endl;
     }
+
+    if (listVars && getVar) {
+        try {
+            for (const std::string& varName : listVars()) {
+                VariablePtr var = (getVar(varName.c_str()));
+                if (!var.empty()) {
+                    //std::cout << "[VM] Found variable:" << call_lib_name + varName << std::endl; // Debug output
+                    outerVariables[call_lib_name + varName] = var;
+                    //std::cout << outerVariables[call_lib_name + varName] << "\n";
+                }
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "[VM] Exception while calling listVars: " << e.what() << std::endl;
+        }
+        catch (...) {
+            std::cerr << "[VM] Unknown exception while calling listVars." << std::endl;
+        }
+    }
+}
+
+std::unordered_map<std::string, std::string> Return_OuterVariables() {
+    return outerVariables;
 }
 
 #ifdef __cplusplus

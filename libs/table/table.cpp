@@ -32,7 +32,7 @@ open DLLEXPORT ReturnType helper get_table_item(const std::vector<std::string>& 
 }
 
 open DLLEXPORT ReturnType helper new_table_object(const std::vector<std::string>& args) {
-    if (args.size() < 2) {
+    if (args.size() < 3) {
         std::cerr << "[TABLE] Error: Invalid number of arguments\n";
         return nullptr;
     }

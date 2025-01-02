@@ -1,6 +1,8 @@
 #include "vm.h"
 #include "tinyexpr.h"
 
+#include <any>
+
 std::unordered_map<std::string, std::string> functions_module;
 std::unordered_map<std::string, std::string> functions_module_args;
 std::unordered_map<std::string, std::string> var_module_names;
@@ -250,6 +252,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 	bool isWhileLoop = false;
 	int currentForLoop = 0;
 	std::string currentFunc = "";
+	std::vector<std::any> allocatedObjects;
 	if (customData.empty()) {
 		if (filePath.empty())
 		{
@@ -293,6 +296,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 			}
 			change_line(arg);
 			lineData.push_back(arg); 
+			allocatedObjects.push_back(arg);
 		}
 		if (lineData[0] == "END" || lineData[1] == "END")
 		{
@@ -351,8 +355,20 @@ void VM::Compile(std::string customData, std::string moduleName)
 			std::string op2 = args[1];
 			// Map operators to lambda functions for comparisons
 			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
-				{"==", [](const std::string& a, const std::string& b) { return a == b; }},
-				{"~=", [](const std::string& a, const std::string& b) { return a != b; }},
+				{"==", [](const std::string& a, const std::string& b) {	
+					if (isNumeric(a) && isNumeric(b)) {
+						return std::stod(a) == std::stod(b);
+					} else {
+						return a == b;
+					}
+				 }},
+				{"~=", [](const std::string& a, const std::string& b) { 
+					if (isNumeric(a) && isNumeric(b)) {
+						return std::stod(a) != std::stod(b);
+					} else {
+						return a != b;
+					}
+				 }},
 				{"<", [](const std::string& a, const std::string& b) { return std::stoi(a) < std::stoi(b); }},
 				{">", [](const std::string& a, const std::string& b) { return std::stoi(a) > std::stoi(b); }},
 				{"<=", [](const std::string& a, const std::string& b) { return std::stoi(a) <= std::stoi(b); }},
@@ -360,13 +376,11 @@ void VM::Compile(std::string customData, std::string moduleName)
 			};
 			// Use the comparison operator to determine skipStatment
 			auto it = comparisonOps.find(lineData[2]);
-			if (lineData[0] == "ELSEIFOP") {
-				std::cout << (skipStatment ? "true" : "false") << "\n";
-			}
-			if (lineData[0] == "ELSEIFOP" && skipStatment == true) {
-				isElseif = !it->second(op1, op2);;
-			} else if (it != comparisonOps.end()) {
+			 if (it != comparisonOps.end()) {
 				skipStatment = !it->second(op1, op2); // Negate for skipStatment logic
+				if (lineData[0] == "ELSEIFOP" && skipStatment == true) {
+					isElseif = !skipStatment;
+				}
 			}
 			//ifStatementValues.push_back(skipStatment);
 		} 
@@ -424,7 +438,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 		}
 		else if (lineData[0] == "BREAK") {
 			breakCurrentLoop = true;
-			return;
+			break;
 		}
 		else if (lineData[0] == "BEGINFUN")
 		{
@@ -525,14 +539,14 @@ void VM::Compile(std::string customData, std::string moduleName)
 				continue;
 			}
 			returnValue = lineData[1];
-			return;
+			break;
 		}
 		else if (lineData[0] == "LOADSLIB") {
 			std::string libPath = std::filesystem::current_path().string() + "/" + lineData[1] + ".sbcc";
 			if (!std::filesystem::exists(libPath))
 			{
 				std::cerr << "[ERROR]: Library file not found: " << libPath << std::endl;
-                return;
+                break;
 			}
 			VM* vm = new VM(libPath);
 			vm->Compile("", lineData[1]);
@@ -673,7 +687,29 @@ void VM::Compile(std::string customData, std::string moduleName)
 		}
 		else if (lineData[0] == "LOADLIB")
 		{
-			loadLibrary(lineData[1]);
+			std::string libName = "";
+			bool foundLib = false;
+			for (const auto& file : std::filesystem::recursive_directory_iterator(std::filesystem::current_path())) {
+				if (file.path().filename().string() == "lib" + lineData[1] + LIB_EXT && file.is_regular_file()) {
+                    //std::cout << file.path().string() << "\n";
+					libName = file.path().string();
+					foundLib = true;
+                    break;
+                }
+			}
+			if (std::filesystem::exists(expandHomeDirectory(LIBPATH + lineData[1] + LIB_EXT)) && libName.empty()) {
+				libName = expandHomeDirectory(LIBPATH + lineData[1] + LIB_EXT);
+				foundLib = true;
+			}
+			if (!foundLib) {
+				std::cerr << "[VM] Couldn't find library in LIBPATH and current directory: " + lineData[1] + ". Trying access lib: " << libName << "\n";
+			}
+			loadLibrary(libName);
+			for (auto& [name, value] : Return_OuterVariables())
+			{
+				var_names[removeWhitespace(name, false)] = value;
+				//std::cout << var_names[removeWhitespace(name, false)] << "\n";
+			}
 		}
 		else if (lineData[0] == "RUNFUNC")
 		{
@@ -738,6 +774,14 @@ void VM::Compile(std::string customData, std::string moduleName)
 			var_names[arg_1] = ops[arg_2](var_names[arg_1], arg_2);
 		}
 	}
+	for (std::any& obj : allocatedObjects) {
+		if (obj.type() == typeid(std::string*)) {
+			delete std::any_cast<std::string*>(obj);
+		} else if (obj.type() == typeid(VM*)) {
+			delete std::any_cast<VM*>(obj);
+		}
+	}
+	allocatedObjects.clear();
 }
 
 void VM::AddVariable(std::string name, std::string value)

@@ -19,6 +19,6 @@
         print->(myFunc->())
 3: Add for loops
     Example:
-        for i in 1, 10 do
+        for i, range->(1, 10), 3 do
             print->(i)
         end!
