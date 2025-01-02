@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+namespace simple {
+
 extern std::unordered_map<std::string, std::pair<bool, std::string>> defineFlags;
 
 extern std::vector<std::string> bytecodes;
@@ -28,6 +30,8 @@ struct ByteCode {
 	std::string originalLine = "";
 	std::string value = "";
 };
+
+}
 
 #ifdef __cplusplus
 }

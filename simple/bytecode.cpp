@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+namespace simple {
+
 /*
 * Here is where you can set up a define flag
 * The format of these flags are like this
@@ -39,6 +41,8 @@ std::vector<std::string> bytecodes = {
 	"RETURN",
 	"LOADSLIB",
 };
+
+}
 
 #ifdef __cplusplus
 }

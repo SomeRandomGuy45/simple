@@ -11,6 +11,8 @@
 #include <unistd.h>
 #endif
 
+namespace simple {
+
 std::string getCurrentWorkingDirectory() {
     #ifdef _WIN32
     // Wide string buffer for Windows
@@ -330,6 +332,8 @@ void Token::handleVariableAssignment(const std::string& line, int64_t currentLin
         std::cerr << "[TOKEN-PARSER] Couldn't find bytecode with this line: " + line + ". Line index is " + std::to_string(currentLine) << "\n";
         throw std::runtime_error("Failed to run script!");
     }
+}
+
 }
 
 #ifdef __cplusplus

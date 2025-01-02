@@ -3,6 +3,8 @@
 
 #include <any>
 
+namespace simple {
+
 std::unordered_map<std::string, std::string> functions_module;
 std::unordered_map<std::string, std::string> functions_module_args;
 std::unordered_map<std::string, std::string> var_module_names;
@@ -808,6 +810,8 @@ void VM::RemoveFunction(std::string func_name)
 {
 	functions.erase(func_name);
 	functions_args.erase(func_name);
+}
+
 }
 
 #ifdef __cplusplus

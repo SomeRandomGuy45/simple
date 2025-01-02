@@ -13,6 +13,8 @@
 extern "C" {
 #endif
 
+namespace simple {
+
 using ReturnType = std::variant<std::nullptr_t, std::string>;
 using VarType = std::string;
 
@@ -37,6 +39,8 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
 std::unordered_map<std::string, std::string> Return_OuterVariables();
 
 void loadLibrary(const std::string& libName);
+
+}
 
 #ifdef __cplusplus
 }

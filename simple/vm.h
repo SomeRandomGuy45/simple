@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+namespace simple {
+
 extern std::unordered_map<std::string, std::string> functions_module;
 extern std::unordered_map<std::string, std::string> functions_module_args;
 extern std::unordered_map<std::string, std::string> var_module_names;
@@ -57,6 +59,8 @@ private:
 
 	uint64_t totalRAM = getTotalRAM();
 };
+
+}
 
 #ifdef __cplusplus
 }

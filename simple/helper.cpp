@@ -8,6 +8,8 @@ std::vector<std::string> libLocations = {
 extern "C" {
 #endif
 
+namespace simple {
+
 //These 2 functions helps out with removeWhitespace
 static std::string trimLeft(const std::string& str) {
 	size_t start = str.find_first_not_of(" \t\n\r\f\v");
@@ -140,6 +142,8 @@ void change_line(std::string& str) {
         str.replace(pos, 2, "\n");
         pos += 1; // Move past the replacement
     }
+}
+
 }
 
 #ifdef __cplusplus

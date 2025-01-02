@@ -92,6 +92,8 @@ inline uint64_t getTotalRAM() {
 extern "C" {
 #endif
 
+namespace simple {
+
 std::string removeWhitespace(std::string str, bool NO_SPACE);
 std::string getRandomFileName();
 std::string expandHomeDirectory(const std::string& path);
@@ -100,6 +102,8 @@ std::vector<std::string> split(const std::string& str, char delimiter);
 void change_line(std::string& str);
 bool isVersionLike(const std::string& str);
 bool isNumeric(const std::string& str);
+
+}
 
 #ifdef __cplusplus
 }

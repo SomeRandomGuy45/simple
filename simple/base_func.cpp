@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+namespace simple {
+
 std::unordered_map<std::string, FunctionPtr> outerFunctions;
 std::unordered_map<std::string, std::string> outerVariables;
 std::unordered_map<std::string, void*> loadedLibraries;
@@ -381,6 +383,8 @@ void loadLibrary(const std::string& libName) {
 std::unordered_map<std::string, std::string> Return_OuterVariables() {
     return outerVariables;
 }
+
+};
 
 #ifdef __cplusplus
 }

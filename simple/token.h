@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+namespace simple {
+
 // The Token class manages the conversion of script lines to bytecode.
 // It holds data about the current file, current line, and related operations.
 
@@ -48,6 +50,8 @@ private:
     void handleLibraryAddition(const std::string& line, int64_t currentLine); // Handle library additions
     void handleVariableAssignment(const std::string& line, int64_t currentLine); // Handle variable assignments
 };
+
+}
 
 #ifdef __cplusplus
 }

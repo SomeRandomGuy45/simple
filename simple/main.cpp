@@ -205,7 +205,7 @@ static bool runArgs(const std::string& arg, const std::string& command, const st
         {
             return false;
         }
-        Token* token = new Token(commandBefore, command, true);
+        simple::Token* token = new simple::Token(commandBefore, command, true);
         try {
             token->StartReadingFile();
         } catch (const std::exception& e) {
@@ -220,7 +220,7 @@ static bool runArgs(const std::string& arg, const std::string& command, const st
         {
             return false;
         }
-        VM* vm = new VM(command);
+        simple::VM* vm = new simple::VM(command);
         vm->Compile();
         delete vm;
         return true;
@@ -256,8 +256,8 @@ int main(int argc, char** argv) {
     * Cleans the files that we just created for VM
     */
     removeAllFiles();
-    ARG_INPUT_LENGTH = argc;
-    ARG_INPUT = argv;
+    simple::ARG_INPUT_LENGTH = argc;
+    simple::ARG_INPUT = argv;
     bool shouldKill = allArgs(argc, argv);
     if (shouldKill) {
         return EXIT_SUCCESS;
@@ -273,7 +273,7 @@ int main(int argc, char** argv) {
     std::srand(static_cast<unsigned int>(std::time(0)));
     std::filesystem::path tempPath = std::filesystem::temp_directory_path() / ".simple";
 
-    Token* token = new Token(tempPath.string());
+    simple::Token* token = new simple::Token(tempPath.string());
 
     if (argc >= 2) {
         try {
@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
         outputFile << newLine << std::endl;
 
         delete token; // Ensure proper cleanup
-        token = new Token(tempPath.string());
+        token = new simple::Token(tempPath.string());
 
         try {
             token->StartReadingFile();
