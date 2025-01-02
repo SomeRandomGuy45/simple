@@ -8,6 +8,27 @@ namespace simple {
 std::unordered_map<std::string, std::string> functions_module;
 std::unordered_map<std::string, std::string> functions_module_args;
 std::unordered_map<std::string, std::string> var_module_names;
+// Map operators to lambda functions for comparisons
+std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
+	{"==", [](const std::string& a, const std::string& b) {	
+			if (isNumeric(a) && isNumeric(b)) {
+				return std::stod(a) == std::stod(b);
+			} else {
+				return a == b;
+			}
+			}},
+	{"~=", [](const std::string& a, const std::string& b) { 
+			if (isNumeric(a) && isNumeric(b)) {
+				return std::stod(a) != std::stod(b);
+			} else {
+				return a != b;
+			}
+			}},
+	{"<", [](const std::string& a, const std::string& b) { return std::stod(a) < std::stod(b); }},
+	{">", [](const std::string& a, const std::string& b) { return std::stod(a) > std::stod(b); }},
+	{"<=", [](const std::string& a, const std::string& b) { return std::stod(a) <= std::stod(b); }},
+	{">=", [](const std::string& a, const std::string& b) { return std::stod(a) >= std::stod(b); }}
+};
 
 bool breakCurrentLoop = false;
 
@@ -347,6 +368,15 @@ void VM::Compile(std::string customData, std::string moduleName)
 				VM* vm = new VM();
 				DoLogic(vm);
 				while (!breakCurrentLoop) {
+					std::vector<std::string> args = vm->DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
+					std::string op1 = args[0];
+					std::string op2 = args[1];
+					auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
+					if (it != comparisonOps.end()) {
+						if (!it->second(op1, op2)) {
+							break;
+						}
+					}
 					vm->Compile(whileLoops[currentForLoop]);
 					if (breakCurrentLoop) {
                         break;
@@ -367,27 +397,6 @@ void VM::Compile(std::string customData, std::string moduleName)
 			std::string op1 = args[0];
 			std::string op2 = args[1];
 			//std::cout << op1 << " " << op2 << std::endl;
-			// Map operators to lambda functions for comparisons
-			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
-				{"==", [](const std::string& a, const std::string& b) {	
-					if (isNumeric(a) && isNumeric(b)) {
-						return std::stod(a) == std::stod(b);
-					} else {
-						return a == b;
-					}
-				 }},
-				{"~=", [](const std::string& a, const std::string& b) { 
-					if (isNumeric(a) && isNumeric(b)) {
-						return std::stod(a) != std::stod(b);
-					} else {
-						return a != b;
-					}
-				 }},
-				{"<", [](const std::string& a, const std::string& b) { return std::stod(a) < std::stod(b); }},
-				{">", [](const std::string& a, const std::string& b) { return std::stod(a) > std::stod(b); }},
-				{"<=", [](const std::string& a, const std::string& b) { return std::stod(a) <= std::stod(b); }},
-				{">=", [](const std::string& a, const std::string& b) { return std::stod(a) >= std::stod(b); }}
-			};
 			// Use the comparison operator to determine skipStatment
 			auto it = comparisonOps.find(lineData[2]);
 			 if (it != comparisonOps.end()) {
@@ -433,21 +442,12 @@ void VM::Compile(std::string customData, std::string moduleName)
 			std::vector<std::string> args = DoStringLogic(lineData[1], lineData[3]);
 			std::string op1 = args[0];
 			std::string op2 = args[1];
-			// Map operators to lambda functions for comparisons
-			std::unordered_map<std::string, std::function<bool(const std::string&, const std::string&)>> comparisonOps = {
-				{"==", std::equal_to<std::string>()},
-				{"~=", std::not_equal_to<std::string>()},
-				{"!>", std::greater<std::string>()},
-				{">=", std::greater_equal<std::string>()},
-				{"<!", std::less<std::string>()},
-				{"<=", std::less_equal<std::string>()}
-			};
-			// Use the comparison operator to determine skipStatment
+
 			auto it = comparisonOps.find(lineData[2]);
 			if (it != comparisonOps.end()) {
 				whileLoops[currentForLoop] = "";
-				whileLoops_args[currentForLoop] = {op1, lineData[2], op2};
-				isWhileLoop = it->second(op1, op2); // Negate for skipStatment logic
+				whileLoops_args[currentForLoop] = {lineData[1], lineData[2], lineData[3]};
+				isWhileLoop = it->second(op1, op2);
 			}
 		}
 		else if (lineData[0] == "BREAK") {

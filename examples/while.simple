@@ -1,12 +1,9 @@
 func! hi()
     global i = 0
-    while true == true do
-        if i > 5 then
-            break
-        end
+    while i > 5 do
         i++
     end!
-    return "asfj"
+    return "done with loop!"
 end!
 
 func! fib(x)
