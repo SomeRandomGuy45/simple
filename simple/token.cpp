@@ -187,7 +187,7 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
         currentBytecodeFile << "RUNANDDEFVAR," + std::string(match[1]) + "," + std::string(match[2]) + "," + std::string(match[3]) << std::endl;
     }
     else if (line.substr(0, 6) == "global") {
-        if (std::regex_match(line, match, std::regex(R"(global\s+(\w+)\s*=\s*(.+))"))) {
+        if (std::regex_match(line, match, std::regex(R"(global\s+([\w.]+)\s*=\s*([\s\S]+))"))) {
             size_t pos = 0;
             std::string str = match[2].str();
             while ((pos = str.find(",", pos)) != std::string::npos) {
@@ -314,7 +314,7 @@ void Token::handleLibraryAddition(const std::string& line, int64_t currentLine) 
 
 void Token::handleVariableAssignment(const std::string& line, int64_t currentLine) {
     std::smatch match;
-    if (std::regex_match(line, match, std::regex(R"((\w+)\s*=\s*([\s\S]+))"))) {
+    if (std::regex_match(line, match, std::regex(R"(([\w.]+)\s*=\s*([\s\S]+))"))) {
         currentBytecodeFile << "DEFINEVAR," + std::string(match[1]) + "," + std::string(match[2]) << std::endl;
     } else {
         if (inString)

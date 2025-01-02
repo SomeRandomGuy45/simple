@@ -1,0 +1,4 @@
+add rand
+print->(rand.seed)
+rand.seed = -3
+print->(rand.seed)
