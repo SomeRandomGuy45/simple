@@ -122,7 +122,17 @@ ReturnType libExists(std::vector<std::string> args) {
         std::cout << "[LIBEXISTS] Error: Invalid number of arguments\n";
         return nullptr;
     }
-    
+	bool foundLib = false;
+	for (const auto& file : std::filesystem::recursive_directory_iterator(std::filesystem::current_path())) {
+		if (file.path().filename().string() == "lib" + args[0] + LIB_EXT && file.is_regular_file()) {
+			foundLib = true;
+            break;
+        }
+	}
+	if (std::filesystem::exists(expandHomeDirectory(LIBPATH + args[0] + LIB_EXT)) && foundLib == false) {
+		foundLib = true;
+	}
+    return foundLib ? "true" : "false";
 }
 
 ReturnType allocMemory(std::vector<std::string> args)
@@ -258,6 +268,7 @@ std::unordered_map<std::string, std::function<ReturnType(std::vector<std::string
         {"getInput", get_users_input},
         {"getArgs", getArgs},
         {"isNumber", isANumber},
+        {"libExists", libExists}
     };
 }
 
