@@ -5,12 +5,4 @@
 !define MIN_RAM 256
 !define MIN_VERSION v1.0.0
 
-func! test()
-    return "Hello world!"
-end!
-
-func! test_2()
-    return "Hello world 2.0!"
-end!
-
-print->(test->(), test_2->()) // prints Hello World!
+print->("Hello world!")
