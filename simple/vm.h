@@ -25,12 +25,14 @@ public:
 
 	void DoLogic(VM* v);
 	void changeFilePath(std::string src);
-	void Compile(std::string customData = "", std::string moduleName = "");
+	void Compile(std::string customData = "", std::string moduleName = "", bool isWhileLoop_ = false);
 	void AddVariable(std::string name, std::string value);
 	void RemoveVariable(std::string name);
 	void AddFunction(std::string func_name, std::string func_value);
 	void AddFunctionArgs(std::string func_name, std::string func_args);
 	void RemoveFunction(std::string func_name);
+	void AddWhileLoop(int num, std::string value);
+	void AddWhileLoop_Arg(int num, std::tuple<std::string, std::string, std::string> value);
 	std::variant<double, std::nullptr_t> evaluateExpression(const std::string& expr);
 	std::string RunScriptFunction(std::string func_name, std::vector<std::string> args);
 	std::vector<std::string> DoStringLogic(const std::string& line1, const std::string& line2);

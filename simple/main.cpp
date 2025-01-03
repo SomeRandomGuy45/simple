@@ -263,13 +263,6 @@ int main(int argc, char** argv) {
         return EXIT_SUCCESS;
     }
 
-    #ifdef _WIN32
-    SetConsoleCtrlHandler((PHANDLER_ROUTINE)console_ctrl_handler, TRUE);
-    #else
-    signal(SIGINT, catchSignal);
-    signal(SIGTERM, catchSignal);
-    #endif
-
     std::srand(static_cast<unsigned int>(std::time(0)));
     std::filesystem::path tempPath = std::filesystem::temp_directory_path() / ".simple";
 
@@ -291,6 +284,13 @@ int main(int argc, char** argv) {
         delete token;
         return EXIT_SUCCESS;
     }
+
+    #ifdef _WIN32
+    SetConsoleCtrlHandler((PHANDLER_ROUTINE)console_ctrl_handler, TRUE);
+    #else
+    signal(SIGINT, catchSignal);
+    signal(SIGTERM, catchSignal);
+    #endif
 
     std::ofstream outputFile(tempPath, std::ios::in | std::ios::out | std::ios::trunc);
 

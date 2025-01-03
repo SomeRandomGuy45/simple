@@ -214,6 +214,9 @@ void Token::handleLine(std::string& line, int64_t currentLine, bool& trapInFunct
     else if (std::regex_match(line, match, std::regex(R"((.+)(\+\+|--|\*\*|\/\/)\s*)"))) {
         currentBytecodeFile << "INC," << match[1].str() << "," << match[2].str() << std::endl;
     }
+    else if (std::regex_match(line, match, std::regex(R"((.+)\s+(\+=|-=|\*=|\/=)(.+)\s*)"))) {
+        currentBytecodeFile << "ASSIGN," << match[1].str() << "," << match[2].str() << "," << match[3].str() << std::endl;
+    }
     // If statement
     else if (std::regex_match(line, match, std::regex(R"(if\s+(.+?)\s*[^->](==|~=|>=|>|<=|<)\s*(.+?)\s*then)"))) {
         currentBytecodeFile << "IFOP," << std::string(match[1]) << "," << std::string(match[2]) << "," << std::string(match[3]) << std::endl;

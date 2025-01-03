@@ -113,6 +113,12 @@ void VM::DoLogic(VM* v)
 	for (const auto& [key, value] : var_names) {
 		v->AddVariable(key, value);
 	}
+	for (const auto& [key, value] : whileLoops) {
+		v->AddWhileLoop(key, value);
+	}
+	for (const auto& [key, value] : whileLoops_args) {
+		v->AddWhileLoop_Arg(key, value);
+	}
 }
 
 #ifdef __cplusplus
@@ -272,7 +278,7 @@ std::variant<std::string, std::nullptr_t> VM::RunFuncWithArgs(std::vector<std::s
 	return nullptr;
 }
 //This is the implementation of how we can run the code from the bytecode!
-void VM::Compile(std::string customData, std::string moduleName)
+void VM::Compile(std::string customData, std::string moduleName, bool isWhileLoop_)
 {
 	bool stuckInComment = false;
 	bool skipStatment = false;
@@ -299,6 +305,19 @@ void VM::Compile(std::string customData, std::string moduleName)
 		{
 			scriptLines.push_back(currentLine);
 		}
+	}
+	if (isWhileLoop_) {
+		std::vector<std::string> args = DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
+		std::string op1 = args[0];
+		std::string op2 = args[1];
+		auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
+		if (it != comparisonOps.end()) {
+			bool result = it->second(op1, op2);
+			if (!result) {
+				breakCurrentLoop = true;
+				return;
+			}
+		} 
 	}
 	for (const std::string& line : scriptLines) {
 		for (const auto& [key, value] : functions) {
@@ -368,16 +387,7 @@ void VM::Compile(std::string customData, std::string moduleName)
 				VM* vm = new VM();
 				DoLogic(vm);
 				while (!breakCurrentLoop) {
-					std::vector<std::string> args = vm->DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
-					std::string op1 = args[0];
-					std::string op2 = args[1];
-					auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
-					if (it != comparisonOps.end()) {
-						if (!it->second(op1, op2)) {
-							break;
-						}
-					}
-					vm->Compile(whileLoops[currentForLoop]);
+					vm->Compile(whileLoops[currentForLoop], "", true);
 					if (breakCurrentLoop) {
                         break;
 					}
@@ -442,7 +452,6 @@ void VM::Compile(std::string customData, std::string moduleName)
 			std::vector<std::string> args = DoStringLogic(lineData[1], lineData[3]);
 			std::string op1 = args[0];
 			std::string op2 = args[1];
-
 			auto it = comparisonOps.find(lineData[2]);
 			if (it != comparisonOps.end()) {
 				whileLoops[currentForLoop] = "";
@@ -820,12 +829,6 @@ void VM::Compile(std::string customData, std::string moduleName)
 			std::string arg_1 = lineData[1];
 			std::string arg_2 = lineData[2];
 			bool foundVar = false;
-			std::unordered_map<std::string, std::function<std::string(const std::string&, const std::string&)>> ops = {
-				{"++", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) + 1); }},
-				{"--", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) - 1); }},
-				{"**", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) * std::stod(a)); }},
-				{"//", [](const std::string& a, const std::string& b) { return std::to_string(std::stod(a) * std::stod(a)); }},
-			};
 			for (const auto& [var, key] : var_names) {
 				if (var == arg_1) {
 					foundVar = true;
@@ -835,7 +838,72 @@ void VM::Compile(std::string customData, std::string moduleName)
 			if (!foundVar) {
 				continue;
 			}
-			var_names[arg_1] = ops[arg_2](var_names[arg_1], arg_2);
+			double val = std::stod(var_names[arg_1]);
+			if (arg_2 == "++") {
+				val += 1;
+			} else if (arg_2 == "--") {
+				val -= 1;
+			} else if (arg_2 == "**") {
+				val *= val;
+			} else if (arg_2 == "//") {
+				val /= val;
+			}
+			var_names[arg_1] = std::to_string(val);
+			if (isWhileLoop_) {
+				std::vector<std::string> args = DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
+				std::string op1 = args[0];
+				std::string op2 = args[1];
+				auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
+				if (it != comparisonOps.end()) {
+					bool result = it->second(op1, op2);
+					if (!result) {
+						breakCurrentLoop = true;
+						return;
+					}
+				} 
+			}
+			//var_names[arg_1] = ops[arg_2](var_names[arg_1], arg_2);
+		} else if (lineData[0] == "ASSIGN") {
+			std::string var_name = lineData[1];
+            std::string var_op = lineData[2];
+			std::string var_value = lineData[3];
+			for (const auto& [var, key] : var_names) {
+				if (var == var_value) { 
+					var_value = var_names[var];
+                    break;
+				}
+			}
+			std::unordered_map<std::string, std::function<std::string(const std::string&, const std::string&)>> math_ops {
+				{"+=", [](const std::string& a, const std::string& b) { 
+					return std::to_string(std::stod(a) + std::stod(b));
+				}},
+				{"-=", [](const std::string& a, const std::string& b) { 
+					return std::to_string(std::stod(a) - std::stod(b));
+				}},
+				{"*=", [](const std::string& a, const std::string& b) { 
+					return std::to_string(std::stod(a) * std::stod(b));
+				}},
+				{"/=", [](const std::string& a, const std::string& b) { 
+					return std::to_string(std::stod(a) / std::stod(b));
+				}},
+			};
+			auto it = math_ops.find(var_op);
+			if (it != math_ops.end()) {
+				var_names[var_name] = it->second(var_names[var_name], var_value);
+			}
+			if (isWhileLoop_) {
+				std::vector<std::string> args = DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
+				std::string op1 = args[0];
+				std::string op2 = args[1];
+				auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
+				if (it != comparisonOps.end()) {
+					bool result = it->second(op1, op2);
+					if (!result) {
+						breakCurrentLoop = true;
+						return;
+					}
+				} 
+			}
 		}
 	}
 	for (std::any& obj : allocatedObjects) {
@@ -872,6 +940,14 @@ void VM::RemoveFunction(std::string func_name)
 {
 	functions.erase(func_name);
 	functions_args.erase(func_name);
+}
+
+void VM::AddWhileLoop(int num, std::string value) {
+	whileLoops[num] = value;
+}
+
+void VM::AddWhileLoop_Arg(int num, std::tuple<std::string, std::string, std::string> value) {
+	whileLoops_args[num] = value;
 }
 
 }

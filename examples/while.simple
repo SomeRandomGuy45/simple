@@ -1,8 +1,10 @@
 func! hi()
     global i = 0
-    while i > 5 do
-        i++
+    while i <= 100 do
+        i += 1
+        print->(i)
     end!
+    print->("loop done!")
     return "done with loop!"
 end!
 
@@ -30,6 +32,3 @@ end!
 print->(hi->())
 print->(fib->(8))
 print->(test->(31))
-global x = 8.23
-x**
-print->(x)
