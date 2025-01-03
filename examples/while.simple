@@ -1,10 +1,10 @@
 func! hi()
-    global i = 0
+    global i = 9/3
     while i < 5 do
-        i += 1
         print->(i)
+        i++
     end!
-    print->("loop done!")
+    print->("loop done!", i)
     return "done with loop!"
 end!
 
@@ -34,5 +34,12 @@ print->(fib->(8))
 print->(test->(31))
 global x = 3
 if x == test->(3) then
-    print->(h)
+    x = x + 1
+    print->(x)
+    x = 3
+    x++
+    print->(x)
+    x = 3
+    x += 1
 end
+print->(x)
