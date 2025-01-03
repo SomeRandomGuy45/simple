@@ -32,6 +32,21 @@ std::unordered_map<std::string, std::function<bool(const std::string&, const std
 
 bool breakCurrentLoop = false;
 
+std::string formatDouble(double value) {
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(6) << value; // Convert with fixed-point notation
+    std::string result = oss.str();
+
+    // Remove trailing zeros and the decimal point if it's not needed
+    result.erase(result.find_last_not_of('0') + 1, std::string::npos); // Remove trailing zeros
+    if (result.back() == '.') {
+        result.pop_back(); // Remove the trailing decimal point
+    }
+
+    return result;
+}
+
+
 std::vector<std::string> VM::DoStringLogic(const std::string& line1, const std::string& line2)
 {
 	std::string op1 = removeWhitespace(line1, false);
@@ -182,7 +197,7 @@ std::variant<double, std::nullptr_t> VM::evaluateExpression(const std::string& e
         double result = te_eval(compiled_expr);
         te_free(compiled_expr); // Free the compiled expression
 
-        return result;
+        return (result);
     } catch (...) {
         return nullptr;
     }
@@ -898,6 +913,14 @@ void VM::Compile(std::string customData, std::string moduleName, bool isWhileLoo
 			std::vector<std::string> args = DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
 			std::string op1 = args[0];
 			std::string op2 = args[1];
+			for (const auto& [name, value] : var_names)
+			{
+				if (name == std::get<0>(whileLoops_args[currentForLoop])) {
+					op1 = value;
+				} else if (name == std::get<2>(whileLoops_args[currentForLoop])) {
+					op2 = value;
+				}
+			}
 			auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
 			if (it != comparisonOps.end()) {
 				bool result = it->second(op1, op2);

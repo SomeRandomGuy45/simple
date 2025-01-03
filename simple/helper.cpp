@@ -112,7 +112,7 @@ bool isVersionLike(const std::string& str) {
 
 bool isNumeric(const std::string& str) {
     for (char c : str) {
-        if (!std::isdigit(c)) {
+        if (!std::isdigit(c) && c != '.') {
             return false;
         }
     }
