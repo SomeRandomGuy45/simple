@@ -132,7 +132,7 @@ static std::string getInput() {
                 break;
         }
     }
-
+    sleep(50);
     return input;
 }
 

@@ -1,7 +1,22 @@
+/*
+ * This file allows you to create tables in a easier manner
+ * Created by: @SomeRandomGuyz
+ */
 !define MIN_RAM 256
 !define MIN_VERSION v1.0.0
 
+if libExists->("table") == false then
+    print->("Table library not found! Exiting!\n")
+    exit->()
+end
+
 add table
+
+if libExists->("rand") == false then
+    print->("Random library not found! Exiting!\n")
+    exit->()
+end
+
 add rand
 
 func! new()
