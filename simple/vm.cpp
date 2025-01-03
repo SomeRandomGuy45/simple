@@ -32,20 +32,6 @@ std::unordered_map<std::string, std::function<bool(const std::string&, const std
 
 bool breakCurrentLoop = false;
 
-std::string formatDouble(double value) {
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(6) << value; // Convert with fixed-point notation
-    std::string result = oss.str();
-
-    // Remove trailing zeros and the decimal point if it's not needed
-    result.erase(result.find_last_not_of('0') + 1, std::string::npos); // Remove trailing zeros
-    if (result.back() == '.') {
-        result.pop_back(); // Remove the trailing decimal point
-    }
-
-    return result;
-}
-
 
 std::vector<std::string> VM::DoStringLogic(const std::string& line1, const std::string& line2)
 {
