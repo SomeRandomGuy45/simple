@@ -406,7 +406,14 @@ void VM::Compile(std::string customData, std::string moduleName, bool isWhileLoo
 			std::vector<std::string> args = DoStringLogic(lineData[1], lineData[3]);
 			std::string op1 = args[0];
 			std::string op2 = args[1];
-			//std::cout << op1 << " " << op2 << std::endl;
+			for (const auto& [name, value] : var_names)
+			{
+				if (name == lineData[1]) {
+					op1 = value;
+				} else if (name == lineData[3]) {
+					op2 = value;
+				}
+			}
 			// Use the comparison operator to determine skipStatment
 			auto it = comparisonOps.find(lineData[2]);
 			 if (it != comparisonOps.end()) {
@@ -452,6 +459,14 @@ void VM::Compile(std::string customData, std::string moduleName, bool isWhileLoo
 			std::vector<std::string> args = DoStringLogic(lineData[1], lineData[3]);
 			std::string op1 = args[0];
 			std::string op2 = args[1];
+			for (const auto& [name, value] : var_names)
+			{
+				if (name == lineData[1]) {
+					op1 = value;
+				} else if (name == lineData[3]) {
+					op2 = value;
+				}
+			}
 			auto it = comparisonOps.find(lineData[2]);
 			if (it != comparisonOps.end()) {
 				whileLoops[currentForLoop] = "";
