@@ -849,19 +849,6 @@ void VM::Compile(std::string customData, std::string moduleName, bool isWhileLoo
 				val /= val;
 			}
 			var_names[arg_1] = std::to_string(val);
-			if (isWhileLoop_) {
-				std::vector<std::string> args = DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
-				std::string op1 = args[0];
-				std::string op2 = args[1];
-				auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
-				if (it != comparisonOps.end()) {
-					bool result = it->second(op1, op2);
-					if (!result) {
-						breakCurrentLoop = true;
-						return;
-					}
-				} 
-			}
 			//var_names[arg_1] = ops[arg_2](var_names[arg_1], arg_2);
 		} else if (lineData[0] == "ASSIGN") {
 			std::string var_name = lineData[1];
@@ -891,19 +878,19 @@ void VM::Compile(std::string customData, std::string moduleName, bool isWhileLoo
 			if (it != math_ops.end()) {
 				var_names[var_name] = it->second(var_names[var_name], var_value);
 			}
-			if (isWhileLoop_) {
-				std::vector<std::string> args = DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
-				std::string op1 = args[0];
-				std::string op2 = args[1];
-				auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
-				if (it != comparisonOps.end()) {
-					bool result = it->second(op1, op2);
-					if (!result) {
-						breakCurrentLoop = true;
-						return;
-					}
-				} 
-			}
+		}
+		if (isWhileLoop_) {
+			std::vector<std::string> args = DoStringLogic(std::get<0>(whileLoops_args[currentForLoop]), std::get<2>(whileLoops_args[currentForLoop]));
+			std::string op1 = args[0];
+			std::string op2 = args[1];
+			auto it = comparisonOps.find(std::get<1>(whileLoops_args[currentForLoop]));
+			if (it != comparisonOps.end()) {
+				bool result = it->second(op1, op2);
+				if (!result) {
+					breakCurrentLoop = true;
+					return;
+				}
+			} 
 		}
 	}
 	for (std::any& obj : allocatedObjects) {

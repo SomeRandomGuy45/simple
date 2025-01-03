@@ -1,6 +1,8 @@
+global x = 0
+
 func! hi()
     global i = 0
-    while i <= 100 do
+    while i < 100 do
         i += 1
         print->(i)
     end!
@@ -32,3 +34,6 @@ end!
 print->(hi->())
 print->(fib->(8))
 print->(test->(31))
+if x == 0 then
+    print->(h)
+end
